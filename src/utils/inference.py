@@ -2,17 +2,27 @@ import cv2
 import dlib
 # import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 from keras.preprocessing import image
 
 
+
 def load_image(image_path, grayscale=False, target_size=None):
-    pil_image = image.load_img(image_path, grayscale, target_size)
-    return image.img_to_array(pil_image)
+
+    # image = Image.open(image_path)
+    # image_array = np.asarray(image, dtype=np.float32)
+    # image = img_to_array(image_array) 
+
+    # pre-process the image for classification
+    pil_image = image.load_img(image_path, grayscale,target_size)
+
+    return image.img_to_array(pil_image)  # image
 
 
 # def load_detection_model(model_path):
 #     detection_model = cv2.CascadeClassifier(model_path)
 #     return detection_model
+
 def load_detection_model():
     return dlib.get_frontal_face_detector()
 
@@ -53,6 +63,21 @@ def draw_text(coordinates, image_array, text, color, x_offset=0, y_offset=0,
     cv2.putText(image_array, text, (x + x_offset, y + y_offset),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 font_scale, color, thickness, cv2.LINE_AA)
+
+
+def draw_text_top3(coordinates, image_array, text_1, text_2, text_3, color, x_offset=0, y_offset=0,
+              font_scale=0.5, thickness=2):
+    x, y = coordinates[:2]
+    image_text = cv2.putText(image_array, text_1, (5, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                font_scale, color, thickness, cv2.LINE_AA)
+    image_text = cv2.putText(image_text, text_2, (5, 60),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                font_scale, color, thickness, cv2.LINE_AA)
+    image_text = cv2.putText(image_text, text_3, (5, 90),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                font_scale, color, thickness, cv2.LINE_AA)
+    return image_text
 
 
 def get_colors(num_classes):
