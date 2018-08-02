@@ -18,9 +18,8 @@ from utils.preprocessor import preprocess_input
 
 # parameters for loading data and images
 # image_path = sys.argv[1]
-image_path = '/home/cuhksz/Pictures/image/sad_hudi.png'
+image_path = '/home/cuhksz/Pictures/image/fear_change.png'
 image_name = image_path[28:-4]
-# detection_model_path = '../trained_models/detection_models/haarcascade_frontalface_default.xml'
 emotion_model_path = '../trained_models/emotion_models/fer2013_mini_XCEPTION.102-0.66.hdf5'
 emotion_labels = get_labels('fer2013')
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -30,7 +29,6 @@ emotion_offsets = (20, 40)
 emotion_offsets = (0, 0)
 
 # loading models
-# face_detection = load_detection_model(detection_model_path)
 face_detection = load_detection_model()
 emotion_classifier = load_model(emotion_model_path, compile=False)
 
@@ -64,6 +62,19 @@ for detect_face in detect_faces:
     emotion_probability = np.max(emotion_prediction)
     emotion_label_arg = np.argmax(emotion_prediction)
     emotion_text = emotion_labels[emotion_label_arg]
+
+
+    EmotionLabels = [ 'angry', 'disgust', 'fear',
+                    'happy', 'sad', 'surprise', 'neutral' ]
+    print 'result:', emotion_text, emotion_probability
+    print EmotionLabels[0], ':', emotion_prediction[0][0]
+    print EmotionLabels[1], ':',emotion_prediction[0][1]
+    print EmotionLabels[2], ':',emotion_prediction[0][2]
+    print EmotionLabels[3], ':',emotion_prediction[0][3]
+    print EmotionLabels[4], ':',emotion_prediction[0][4]
+    print EmotionLabels[5], ':',emotion_prediction[0][5]
+    print EmotionLabels[6], ':',emotion_prediction[0][6]
+
     
     if emotion_text == 'angry':
         color = emotion_probability * np.asarray((255, 0, 0))
@@ -77,10 +88,10 @@ for detect_face in detect_faces:
         color = emotion_probability * np.asarray((0, 255, 255))
     else:
         color = emotion_probability * np.asarray((0, 392255, 0))
-    print 1
+
 
     emotion_text = emotion_text + '=' + str(emotion_probability)
-    print 2
+
     draw_bounding_box(face_coordinates, rgb_image, color)
     draw_text(face_coordinates, rgb_image, emotion_text, color, 0, -50, 1, 2) 
 
