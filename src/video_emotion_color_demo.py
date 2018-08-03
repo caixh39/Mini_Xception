@@ -1,12 +1,15 @@
-from statistics import mode
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
+from statistics import mode
 import cv2
 from keras.models import load_model
 import numpy as np
 
 from utils.datasets import get_labels
 from utils.inference import detect_faces
-from utils.inference import draw_text
+from utils.inference import draw_text,draw_text_top3
 from utils.inference import draw_bounding_box
 from utils.inference import apply_offsets
 from utils.inference import load_detection_model
@@ -35,7 +38,8 @@ emotion_window = []
 
 # starting video streaming
 cv2.namedWindow('window_frame')
-video_capture = cv2.VideoCapture(0)
+# video_capture = cv2.VideoCapture(0)
+video_capture = cv2.VideoCapture('/media/cuhksz/Database/Emotion_TD/child/MVI_1138.MOV')
 
 detect_fps_flag = 0
 start = 0.
@@ -49,12 +53,14 @@ while True:
     # for face_coordinates in faces:
     detect_fps_flag = 0
     for detected_face in detected_faces:
+        # print the algorithms frame/second
         if detect_fps_flag == 0:
             start = time.time()
             detect_fps_flag = 1
         face_coordinates = make_face_coordinates(detected_face)
+        # print face_coordinates[:2]
         x1, x2, y1, y2 = apply_offsets(face_coordinates, emotion_offsets)
-        print(y1, y2, x1, x2)
+        # print(y1, y2, x1, x2)
         gray_face = gray_image[y1:y2, x1:x2]
         try:
             gray_face = cv2.resize(gray_face, emotion_target_size)
@@ -68,9 +74,26 @@ while True:
         gray_face = np.expand_dims(gray_face, -1)
         emotion_prediction = emotion_classifier.predict(gray_face)
         emotion_probability = np.max(emotion_prediction)
+        probability_order = sorted(np.squeeze(emotion_prediction))
         emotion_label_arg = np.argmax(emotion_prediction)
         emotion_text = emotion_labels[emotion_label_arg]
         emotion_window.append(emotion_text)
+
+        clos = {'angry':emotion_prediction[0][0], 
+            'disgust':emotion_prediction[0][1], 
+            'fear':emotion_prediction[0][2],
+            'happy':emotion_prediction[0][3], 
+            'sad':emotion_prediction[0][4], 
+            'surprise':emotion_prediction[0][5], 
+            'neutral':emotion_prediction[0][6]}
+        # python's values and key convert
+        clos_conv = {v:k for k,v in clos.items()} 
+        
+        # print clos
+        # print emotion_text, emotion_probability
+        # print clos_conv[probability_order[-2]], probability_order[-2]
+        # print clos_conv[probability_order[-3]], probability_order[-3]
+
 
         if len(emotion_window) > frame_window:
             emotion_window.pop(0)
@@ -93,11 +116,21 @@ while True:
         color = color.astype(int)
         color = color.tolist()
 
+        emotion_top1 = emotion_text + '=' + str(emotion_probability)
+        emotion_top2 = clos_conv[probability_order[-2]] + '=' + str(probability_order[-2])
+        emotion_top3 = clos_conv[probability_order[-3]] + '=' + str(probability_order[-3])
+
         draw_bounding_box(face_coordinates, rgb_image, color)
-        draw_text(face_coordinates, rgb_image, emotion_mode,
-                  color, 0, -45, 1, 1)
-    if detect_fps_flag == 1:
-        print('time: ' + str(1. / ((time.time() - start))) + ' fps')
+        draw_text_top3(face_coordinates, rgb_image, emotion_top1, 
+                        emotion_top2, emotion_top3, color, 0, -50, 0.8, 2)
+
+        # draw_text is max(emotion_probability)
+        # draw_text(face_coordinates, rgb_image, emotion_mode,
+                  # color, 0, -45, 1, 1)
+
+    # print the algorithms frame/second
+    # if detect_fps_flag == 1:
+    #     print('time: ' + str(1. / ((time.time() - start))) + ' fps')
 
     bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
     cv2.imshow('window_frame', bgr_image)
