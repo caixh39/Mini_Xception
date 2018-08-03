@@ -5,9 +5,12 @@ Email: arriaga.camargo@gmail.com
 Github: https://github.com/oarriaga
 Description: Train emotion classification model
 """
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
 from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
-from keras.callbacks import ReduceLROnPlateau
+from keras.callbacks import ReduceLROnPlateau,TensorBoard
 from keras.preprocessing.image import ImageDataGenerator
 
 from models.cnn import mini_XCEPTION
@@ -35,7 +38,7 @@ data_generator = ImageDataGenerator(
                         zoom_range=.1,
                         horizontal_flip=True)
 
-# model parameters/compilation
+# model parameters/compilation; Configures the model for training
 model = mini_XCEPTION(input_shape, num_classes)
 model.compile(optimizer='adam', loss='categorical_crossentropy',
               metrics=['accuracy'])
@@ -46,17 +49,24 @@ datasets = ['fer2013']
 for dataset_name in datasets:
     print('Training dataset:', dataset_name)
 
-    # callbacks
+    # saving model after one epoch finishing,
+    trained_models_path = base_path + dataset_name + '_mini_XCEPTION'
+    model_names = trained_models_path + 'weights.{epoch:02d}-{val_acc:.2f}.hdf5' 
+    model_checkpoint = ModelCheckpoint(model_names, monitor='val_loss', verbose=1,
+                                      save_best_only=True,mode='auto',period=1)
+
+    # view on internal states and statistics of the model during training
+    # a set callbacks functions, and visualization by tensorboard
     log_file_path = base_path + dataset_name + '_emotion_training.log'
     csv_logger = CSVLogger(log_file_path, append=False)
     early_stop = EarlyStopping('val_loss', patience=patience)
     reduce_lr = ReduceLROnPlateau('val_loss', factor=0.1,
                                   patience=int(patience/4), verbose=1)
-    trained_models_path = base_path + dataset_name + '_mini_XCEPTION'
-    model_names = trained_models_path + '.{epoch:02d}-{val_acc:.2f}.hdf5'
-    model_checkpoint = ModelCheckpoint(model_names, 'val_loss', verbose=1,
-                                                    save_best_only=True)
-    callbacks = [model_checkpoint, csv_logger, early_stop, reduce_lr]
+    tensor_board = TensorBoard(log_dir='./log_dir',
+                             histogram_freq=1,
+                             write_graph=True,
+                             write_images=True)
+    callbacks = [model_checkpoint, csv_logger, early_stop, reduce_lr, tensor_board]
 
     # loading dataset
     data_loader = DataManager(dataset_name, image_size=input_shape[:2])
@@ -65,6 +75,9 @@ for dataset_name in datasets:
     num_samples, num_classes = emotions.shape
     train_data, val_data = split_data(faces, emotions, validation_split)
     train_faces, train_emotions = train_data
+    
+    # Efficiency: generator run by paralle
+    # Trains the model on data generated batch-by-batch by a Python generator
     model.fit_generator(data_generator.flow(train_faces, train_emotions,
                                             batch_size),
                         steps_per_epoch=len(train_faces) / batch_size,
