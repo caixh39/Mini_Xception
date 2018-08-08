@@ -39,7 +39,7 @@ emotion_window = []
 # starting video streaming
 cv2.namedWindow('window_frame')
 # video_capture = cv2.VideoCapture(0)
-video_capture = cv2.VideoCapture('/media/cuhksz/Database/Emotion_TD/child/MVI_1138.MOV')
+video_capture = cv2.VideoCapture('/media/cuhksz/Database/Emotion_TD/child/MVI_1136.MOV')
 
 detect_fps_flag = 0
 start = 0.
@@ -120,19 +120,28 @@ while True:
         emotion_top2 = clos_conv[probability_order[-2]] + '=' + str(probability_order[-2])
         emotion_top3 = clos_conv[probability_order[-3]] + '=' + str(probability_order[-3])
 
+        if emotion_text == 'fear':
+            draw_text_top3(face_coordinates, rgb_image, emotion_top1, 
+                        emotion_top2, emotion_top3, color, 0, -50, 0.8, 2)
+            bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+            cv2.imwrite('../images/fear_draw/'+ str(emotion_probability) +'_'+ 'dlib.png', bgr_image)
+
+
         draw_bounding_box(face_coordinates, rgb_image, color)
         draw_text_top3(face_coordinates, rgb_image, emotion_top1, 
                         emotion_top2, emotion_top3, color, 0, -50, 0.8, 2)
 
-        # draw_text is max(emotion_probability)
-        # draw_text(face_coordinates, rgb_image, emotion_mode,
-                  # color, 0, -45, 1, 1)
 
     # print the algorithms frame/second
     # if detect_fps_flag == 1:
     #     print('time: ' + str(1. / ((time.time() - start))) + ' fps')
+    
+
 
     bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
     cv2.imshow('window_frame', bgr_image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+
+
