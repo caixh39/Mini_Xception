@@ -10,8 +10,10 @@ from keras.models import Model
 from keras.layers import Input
 from keras.layers import MaxPooling2D
 from keras.layers import SeparableConv2D
+from keras.layers import Reshape, Dense, multiply, Permute
 from keras import layers
 from keras.regularizers import l2
+from keras import backend as K
 
 
 def simple_CNN(input_shape, num_classes):
@@ -350,6 +352,12 @@ def big_XCEPTION(input_shape, num_classes):
 
 
 def squeeze_excite_block(input, ratio=16):
+    ''' Create a squeeze-excite block
+    Args:
+        input: input tensor
+        filters: number of output filters
+        k: width factor
+    Returns: a keras tensor'''
     init = input
     channel_axis = 1 if K.image_data_format() == "channels_first" else -1
     filters = init._keras_shape[channel_axis]
@@ -399,8 +407,7 @@ def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     x = layers.add([x, residual])
 
     # Squeeze and Excitation  module
-    scale = squeeze_excite_block(x, ratio=16)
-    x = layers.add([scale, x])
+    x = squeeze_excite_block(x, ratio=16)
 
 
     # module 2
@@ -422,8 +429,7 @@ def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     x = layers.add([x, residual])
 
     # Squeeze and Excitation  module
-    scale = squeeze_excite_block(x, ratio=16)
-    x = layers.add([scale, x])
+    x = squeeze_excite_block(x, ratio=16)
 
     # module 3
     residual = Conv2D(64, (1, 1), strides=(2, 2),
@@ -444,8 +450,7 @@ def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     x = layers.add([x, residual])
 
     # Squeeze and Excitation  module
-    scale = squeeze_excite_block(x, ratio=16)
-    x = layers.add([scale, x])
+    x = squeeze_excite_block(x, ratio=16)
 
     # module 4
     residual = Conv2D(128, (1, 1), strides=(2, 2),
@@ -481,9 +486,11 @@ if __name__ == "__main__":
     num_classes = 7
     #model = tiny_XCEPTION(input_shape, num_classes)
     # model.summary()
-    model = mini_XCEPTION(input_shape, num_classes)
-    model.summary()
+    # model = mini_XCEPTION(input_shape, num_classes)
+    # model.summary()
     #model = big_XCEPTION(input_shape, num_classes)
     # model.summary()
     # model = simple_CNN((48, 48, 1), num_classes)
     # model.summary()
+    model = SE_mini_XCEPTION(input_shape, num_classes)
+    model.summary()
