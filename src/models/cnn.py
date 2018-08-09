@@ -300,9 +300,9 @@ def mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                padding='same')(x)
     x = GlobalAveragePooling2D()(x)
     output = Activation('softmax', name='predictions')(x)
-    
+
     # instantiate a Model
-    model = Model(img_input, output) 
+    model = Model(img_input, output)
     return model
 
 
@@ -365,14 +365,16 @@ def squeeze_excite_block(input, ratio=16):
 
     se = GlobalAveragePooling2D()(init)
     se = Reshape(se_shape)(se)
-    se = Dense(filters // ratio, activation='relu', kernel_initializer='he_normal', use_bias=False)(se)
-    se = Dense(filters, activation='sigmoid', kernel_initializer='he_normal', use_bias=False)(se)
+    # kernel_initializer='he_normal', use_bias=False
+    se = Dense(filters // ratio, activation='relu', kernel_initializer='he_uniform', use_bias=False)(se)
+    se = Dense(filters, activation='sigmoid', kernel_initializer='he_uniform', use_bias=False)(se)
 
     if K.image_data_format() == 'channels_first':
         se = Permute((3, 1, 2))(se)
 
     x = multiply([init, se])
     return x
+
 
 def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     regularization = l2(l2_regularization)
@@ -415,6 +417,7 @@ def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                       padding='same', use_bias=False)(x)
     residual = BatchNormalization()(residual)
 
+    x = Activation('relu')(x)
     x = SeparableConv2D(32, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
@@ -436,6 +439,7 @@ def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                       padding='same', use_bias=False)(x)
     residual = BatchNormalization()(residual)
 
+    x = Activation('relu')(x)
     x = SeparableConv2D(64, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
@@ -452,11 +456,58 @@ def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     # Squeeze and Excitation  module
     x = squeeze_excite_block(x, ratio=16)
 
+    # module 3_1
+    x_1 = Activation('relu')(x)
+    x_1 = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x_1 = BatchNormalization()(x_1)
+
+    x_1 = Activation('relu')(x_1)
+    x_1 = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x_1 = BatchNormalization()(x_1)
+
+    x_1 = Activation('relu')(x_1)
+    x_1 = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x_1 = BatchNormalization()(x_1)
+
+    x = layers.add([x_1, x])
+    # Squeeze and Excitation  module
+    x = squeeze_excite_block(x, ratio=16)
+
+    # module 3_2
+    x_1 = Activation('relu')(x)
+    x_1 = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x_1 = BatchNormalization()(x_1)
+
+    x_1 = Activation('relu')(x_1)
+    x_1 = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x_1 = BatchNormalization()(x_1)
+
+    x_1 = Activation('relu')(x_1)
+    x_1 = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x_1 = BatchNormalization()(x_1)
+
+    x = layers.add([x_1, x])
+    # Squeeze and Excitation  module
+    x = squeeze_excite_block(x, ratio=16)
+
     # module 4
     residual = Conv2D(128, (1, 1), strides=(2, 2),
                       padding='same', use_bias=False)(x)
     residual = BatchNormalization()(residual)
 
+    x = Activation('relu')(x)
     x = SeparableConv2D(128, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
@@ -475,9 +526,137 @@ def SE_mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                padding='same')(x)
     x = GlobalAveragePooling2D()(x)
     output = Activation('softmax', name='predictions')(x)
-    
+
     # instantiate a Model
-    model = Model(img_input, output) 
+    model = Model(img_input, output)
+    return model
+
+
+def SE_medium_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
+    regularization = l2(l2_regularization)
+
+    # base
+    img_input = Input(input_shape)
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(img_input)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
+    # module 1_1
+    residual = Conv2D(16, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x)
+    residual = BatchNormalization()(residual)
+
+    x = SeparableConv2D(16, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
+    x = SeparableConv2D(16, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x = layers.add([x, residual])
+
+    # Squeeze and Excitation  module
+    x = squeeze_excite_block(x, ratio=16)
+
+
+    # module 2_1
+    residual = Conv2D(32, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x)
+    residual = BatchNormalization()(residual)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x = layers.add([x, residual])
+
+    # Squeeze and Excitation  module
+    x = squeeze_excite_block(x, ratio=14)
+
+
+    # module 3_1
+    residual = Conv2D(64, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x)
+    residual = BatchNormalization()(residual)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x = layers.add([x, residual])
+
+    # Squeeze and Excitation  module
+    x = squeeze_excite_block(x, ratio=16)
+
+
+    # module 4
+    residual = Conv2D(128, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x)
+    residual = BatchNormalization()(residual)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x = layers.add([x, residual])
+    x = squeeze_excite_block(x, ratio=16)
+
+    # output modules
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = Activation('relu')(x)
+    # x = Conv2D(num_classes, (3, 3),
+    #            kernel_regularizer=regularization,
+    #            padding='same')(x)
+
+    x = SeparableConv2D(num_classes, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = Activation('relu')(x)
+
+    x = GlobalAveragePooling2D()(x)
+    output = Activation('softmax', name='predictions')(x)
+
+    # instantiate a Model
+    model = Model(img_input, output)
     return model
 
 
@@ -492,5 +671,7 @@ if __name__ == "__main__":
     # model.summary()
     # model = simple_CNN((48, 48, 1), num_classes)
     # model.summary()
-    model = SE_mini_XCEPTION(input_shape, num_classes)
+    # model = SE_mini_XCEPTION(input_shape, num_classes)
+    # model.summary()
+    model = SE_medium_XCEPTION(input_shape, num_classes)
     model.summary()
