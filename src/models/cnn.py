@@ -676,6 +676,314 @@ def SE_medium_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     return model
 
 
+def Add_GAP_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
+    regularization = l2(l2_regularization)
+
+    # base
+    img_input = Input(input_shape)
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(img_input)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x_0 = Activation('relu')(x)
+
+    x_01 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_0)
+    x_01 = GlobalAveragePooling2D()(x_01)
+    
+    # module 1
+
+    residual = Conv2D(16, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_0)
+    residual = BatchNormalization()(residual)
+    
+    x = SeparableConv2D(16, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_0)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(16, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x_1 = layers.add([x, residual])
+
+    x_01 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_1)
+    x_01 = GlobalAveragePooling2D()(x_01)
+
+    # module 2
+    residual = Conv2D(32, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_1)
+    residual = BatchNormalization()(residual)
+
+    # x = Activation('relu')(x_2)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x_2 = layers.add([x, residual])
+    x_02 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_2)
+    x_02 = GlobalAveragePooling2D()(x_02)
+
+    # module 3
+    residual = Conv2D(64, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_2)
+    residual = BatchNormalization()(residual)
+
+    # x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_2)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x_3 = layers.add([x, residual])
+    x_03 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_3)
+    x_03 = GlobalAveragePooling2D()(x_03)
+
+    # module 4
+    residual = Conv2D(128, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_3)
+    residual = BatchNormalization()(residual)
+
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_3)
+    x = BatchNormalization()(x)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x_4 = layers.add([x, residual])
+
+    x_04 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_4)
+    x_04 = GlobalAveragePooling2D()(x_04)
+
+
+    # output module
+    x = Conv2D(num_classes, (3, 3),
+               # kernel_regularizer=regularization,
+               padding='same')(x_4)
+    x = GlobalAveragePooling2D()(x)
+    x = layers.add([x, x_03])
+    output = Activation('softmax', name='predictions')(x)
+    
+    # instantiate a Model
+    model = Model(img_input, output) 
+    return model
+
+
+def GAP_CNN_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
+    regularization = l2(l2_regularization)
+
+    # base
+    img_input = Input(input_shape)
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(img_input)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x_0 = Activation('relu')(x)
+
+    x_01 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_0)
+    x_01 = GlobalAveragePooling2D()(x_01)
+    
+    # module 1
+
+    residual = Conv2D(16, (1, 1), strides=(1, 1),
+                      padding='same', use_bias=False)(x_0)
+    residual = BatchNormalization()(residual)
+    
+    x = SeparableConv2D(16, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_0)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(16, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(1, 1), padding='same')(x)
+    x_1 = layers.add([x, residual])
+
+    x_01 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_1)
+    x_01 = GlobalAveragePooling2D()(x_01)
+
+    # module 2
+    residual = Conv2D(32, (1, 1), strides=(1, 1),
+                      padding='same', use_bias=False)(x_1)
+    residual = BatchNormalization()(residual)
+
+    # x = Activation('relu')(x_2)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(1, 1), padding='same')(x)
+    x_2 = layers.add([x, residual])
+    x_02 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_2)
+    x_02 = GlobalAveragePooling2D()(x_02)
+
+
+    # module 2_1
+    residual = Conv2D(32, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_2)
+    residual = BatchNormalization()(residual)
+
+    # x = Activation('relu')(x_2)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_2)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x_21 = layers.add([x, residual])
+    x_02 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_2)
+    x_02 = GlobalAveragePooling2D()(x_02)
+
+
+    # module 3
+    residual = Conv2D(64, (1, 1), strides=(1, 1),
+                      padding='same', use_bias=False)(x_21)
+    residual = BatchNormalization()(residual)
+
+    # x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_21)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(1, 1), padding='same')(x)
+    x_3 = layers.add([x, residual])
+    x_03 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_3)
+    x_03 = GlobalAveragePooling2D()(x_03)
+
+
+    # module 3
+    residual = Conv2D(64, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_3)
+    residual = BatchNormalization()(residual)
+
+    # x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_3)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x_31 = layers.add([x, residual])
+    x_03 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_3)
+    x_03 = GlobalAveragePooling2D()(x_03)
+
+
+
+    # module 4
+    residual = Conv2D(128, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_31)
+    residual = BatchNormalization()(residual)
+
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_31)
+    x = BatchNormalization()(x)
+
+    x = Activation('relu')(x)
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+    x_4 = layers.add([x, residual])
+
+    x_04 = Conv2D(num_classes, (3, 3), strides=(1, 1),
+               # kernel_regularizer=regularization,
+               padding='same')(x_4)
+    x_04 = GlobalAveragePooling2D()(x_04)
+
+
+    # output module
+    x = Conv2D(num_classes, (3, 3),
+               # kernel_regularizer=regularization,
+               padding='same')(x_4)
+    x = GlobalAveragePooling2D()(x)
+
+    x = layers.add([x, x_03])
+    x = layers.add([x, x_04])
+    output = Activation('softmax', name='predictions')(x)
+    
+    # instantiate a Model
+    model = Model(img_input, output) 
+    return model
+
+
+
 if __name__ == "__main__":
     input_shape = (64, 64, 1)
     num_classes = 7
@@ -691,5 +999,9 @@ if __name__ == "__main__":
     # model.summary()
     # model = SE_medium_XCEPTION(input_shape, num_classes)
     # model.summary()
-    model = SE_XCEPTION(input_shape, num_classes)   # parameters is 59095
+    # model = SE_XCEPTION(input_shape, num_classes)   # parameters is 59095
+    # model.summary()
+    # model = Add_GAP_XCEPTION(input_shape, num_classes)   # parameters is 59095
+    # model.summary()  
+    model = GAP_CNN_XCEPTION(input_shape, num_classes)   # parameters is 59095
     model.summary()
