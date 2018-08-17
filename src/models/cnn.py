@@ -14,7 +14,7 @@ from keras.layers import Reshape, Dense, multiply, Permute
 from keras import layers
 from keras.regularizers import l2
 from keras import backend as K
-from SENet import squeeze_excite_block, conv2d_bn
+from Module_Net import squeeze_excite_block, conv2d_bn
 
 
 def mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
