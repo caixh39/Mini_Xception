@@ -22,7 +22,7 @@ from utils.preprocessor import preprocess_input
 batch_size = 16
 num_epochs = 10000
 input_shape = (64, 64, 1)
-validation_split = .2
+# validation_split = .2
 verbose = 1
 num_classes = 7
 patience = 80
@@ -69,13 +69,24 @@ for dataset_name in datasets:
                              write_images=True)
     callbacks = [model_checkpoint, csv_logger, early_stop, reduce_lr, tensor_board]
 
-    # loading dataset
-    data_loader = DataManager(dataset_name, image_size=input_shape[:2])
-    faces, emotions = data_loader.get_data()
-    faces = preprocess_input(faces)
-    num_samples, num_classes = emotions.shape
-    train_data, val_data = split_data(faces, emotions, validation_split)
-    train_faces, train_emotions = train_data
+    # loading train dataset
+    train_data_loader = DataManager(dataset_mode='train', image_size=input_shape[:2])
+    train_faces, train_emotions = train_data_loader.load_fer2013()
+    train_faces = preprocess_input(train_faces)
+    num_samples, num_classes = train_emotions.shape
+
+    # loading val dataset, PublicData
+    val_data_loader = DataManager(dataset_mode='val', image_size=input_shape[:2])
+    val_faces, val_emotions = val_data_loader.load_fer2013()
+    val_faces = preprocess_input(val_faces)
+    num_samples, num_classes = val_emotions.shape   
+
+    # loading test dataset, PrivateData
+    test_data_loader = DataManager(dataset_mode='test', image_size=input_shape[:2])
+    test_faces, test_emotions = test_data_loader.load_fer2013()
+    test_faces = preprocess_input(test_faces)
+    num_samples, num_classes = test_emotions.shape 
+
     
     # Efficiency: generator run by paralle
     # Trains the model on data generated batch-by-batch by a Python generator
@@ -83,4 +94,4 @@ for dataset_name in datasets:
                                             batch_size),
                         steps_per_epoch=len(train_faces) / batch_size,
                         epochs=num_epochs, verbose=1, callbacks=callbacks,
-                        validation_data=val_data)
+                        validation_data=(val_faces, val_emotions))
