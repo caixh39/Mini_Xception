@@ -13,13 +13,13 @@ from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
 from keras.callbacks import ReduceLROnPlateau,TensorBoard
 from keras.preprocessing.image import ImageDataGenerator
 
-from models.cnn import mini_XCEPTION,SE_XCEPTION, Add_GAP_XCEPTION, Multi_XCEPTION
+from models.cnn import mini_XCEPTION,SE_XCEPTION, GAP_concate_XCEPTION
 from utils.datasets import DataManager
 from utils.datasets import split_data
 from utils.preprocessor import preprocess_input
 
 # parameters
-batch_size = 64
+batch_size = 16
 num_epochs = 10000
 input_shape = (64, 64, 1)
 validation_split = .2
@@ -39,7 +39,8 @@ data_generator = ImageDataGenerator(
                         horizontal_flip=True)
 
 # model parameters/compilation; Configures the model for training
-model = Multi_XCEPTION(input_shape, num_classes)
+# optimizer: SGD suitable small datasets 
+model = GAP_concate_XCEPTION(input_shape, num_classes)
 model.compile(optimizer='adam', loss='categorical_crossentropy',
               metrics=['accuracy'])
 model.summary()
@@ -50,7 +51,7 @@ for dataset_name in datasets:
     print('Training dataset:', dataset_name)
 
     # saving model after one epoch finishing
-    trained_models_path = base_path + dataset_name + 'Multi_290k_32_XCEPTION'
+    trained_models_path = base_path + dataset_name + '_GAP_concate_117k_XCEPTION'
     model_names = trained_models_path + '.{epoch:02d}-{val_acc:.4f}.hdf5' 
     model_checkpoint = ModelCheckpoint(model_names, monitor='val_acc', verbose=1,
                                       save_best_only=True,mode='auto',period=1)
@@ -60,7 +61,7 @@ for dataset_name in datasets:
     log_file_path = base_path + dataset_name + '_emotion_training.log'
     csv_logger = CSVLogger(log_file_path, append=False)
     early_stop = EarlyStopping('val_acc', patience=patience)
-    reduce_lr = ReduceLROnPlateau('val_acc', factor=0.1,
+    reduce_lr = ReduceLROnPlateau('val_acc', factor=0.5,
                                   patience=int(patience/4), verbose=1)
     tensor_board = TensorBoard(log_dir='../log_dir',
                              histogram_freq=1,
