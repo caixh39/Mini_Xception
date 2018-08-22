@@ -141,15 +141,15 @@ def mini_MSE_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                         kernel_regularizer=regularization,
                         use_bias=False)(branch0_1)
     branch0_1 = BatchNormalization()(branch0_1)
-    branch0_1 = Activation('relu')(branch0_1)
-    branch0_1 = squeeze_excite_block(branch0_1, ratio=16)
+    # branch0_1 = Activation('relu')(branch0_1)
+
     
     branch0_2 = conv2d_bn(x, 8, 1, 1, strides=(1, 1), padding='valid')
     branch0_2 = SeparableConv2D(16, (3, 3), strides=(1, 1), padding='valid',
                         kernel_regularizer=regularization,
                         use_bias=False)(branch0_2)
     branch0_2 = BatchNormalization()(branch0_2)
-    branch0_2 = squeeze_excite_block(branch0_2, ratio=16)
+
 
 
     branch0_3 = SeparableConv2D(8, (3, 3), strides=(1, 1), padding='valid',
