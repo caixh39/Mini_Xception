@@ -52,6 +52,24 @@ class DataManager(object):
 
         return faces, emotions
 
+
+def load_fer2013_test(dataset_path, image_size):
+    data = pd.read_csv(dataset_path)
+    pixels = data['pixels'].tolist() # nested list of array elements. pixels is a list 
+    width, height = 48, 48
+    faces = []
+    for pixel_sequence in pixels:
+        face = [int(pixel) for pixel in pixel_sequence.split(' ')]
+        face = np.asarray(face).reshape(width, height)
+        face = cv2.resize(face.astype('uint8'), image_size)
+        faces.append(face.astype('float32'))
+
+    faces = np.asarray(faces)
+    faces = np.expand_dims(faces, 0)          
+    faces = np.expand_dims(faces, -1) # inserting a new axis, -1 equal to 1 ?
+    emotions = data['emotion'].tolist()
+
+    return faces, emotions 
     
 def get_labels(dataset_name):
     if dataset_name == 'fer2013':
