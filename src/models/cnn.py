@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
-from keras.layers import Activation, Convolution2D, Dropout, Conv2D
+from keras.layers import Activation, Convolution2D, Dropout, Conv2D, UpSampling2D
 from keras.layers import AveragePooling2D, BatchNormalization
 from keras.layers import GlobalAveragePooling2D
 from keras.models import Sequential
@@ -37,7 +37,7 @@ def mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                       padding='same', use_bias=False)(x)
     residual = BatchNormalization()(residual)
     
-    x = Activation('relu')(x)
+
     x = SeparableConv2D(16, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
@@ -56,7 +56,7 @@ def mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                       padding='same', use_bias=False)(x)
     residual = BatchNormalization()(residual)
 
-    x = Activation('relu')(x)
+
     x = SeparableConv2D(32, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
@@ -75,7 +75,7 @@ def mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                       padding='same', use_bias=False)(x)
     residual = BatchNormalization()(residual)
 
-    x = Activation('relu')(x)
+
     x = SeparableConv2D(64, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
@@ -97,7 +97,7 @@ def mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     x = SeparableConv2D(128, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
-    x = Activation('relu')(x)
+
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
     x = SeparableConv2D(128, (3, 3), padding='same',
@@ -118,75 +118,47 @@ def mini_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     model = Model(img_input, output) 
     return model
 
-def mini_MSE_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
+
+def mini_FPN_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     regularization = l2(l2_regularization)
 
     # base
     img_input = Input(input_shape)
-    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization, padding='same',
                use_bias=False)(img_input)
+    x = BatchNormalization()(x)
     x = Activation('relu')(x)
-    # x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
-    #            use_bias=False)(x)
-    # x = Activation('relu')(x)
-
-    branch0_1 = conv2d_bn(x, 8, 1, 1, strides=(1, 1), 
-                            kernel_regularizer=regularization, padding='valid')
-    branch0_1 = SeparableConv2D(16, (3, 3), padding='valid',
-                        kernel_regularizer=regularization,
-                        use_bias=False)(branch0_1)                   
-    branch0_1 = BatchNormalization()(branch0_1)
-    branch0_1 = Activation('relu')(branch0_1)
-    branch0_1 = SeparableConv2D(16, (3, 3), strides=(1, 1), padding='same',
-                        kernel_regularizer=regularization,
-                        use_bias=False)(branch0_1)
-    branch0_1 = BatchNormalization()(branch0_1)
-    # branch0_1 = Activation('relu')(branch0_1)
-
-    
-    branch0_2 = conv2d_bn(x, 8, 1, 1, strides=(1, 1), padding='valid')
-    branch0_2 = SeparableConv2D(16, (3, 3), strides=(1, 1), padding='valid',
-                        kernel_regularizer=regularization,
-                        use_bias=False)(branch0_2)
-    branch0_2 = BatchNormalization()(branch0_2)
-
-
-
-    branch0_3 = SeparableConv2D(8, (3, 3), strides=(1, 1), padding='valid',
-                        kernel_regularizer=regularization,
-                        use_bias=False)(x)
-    branch0_3 = BatchNormalization()(branch0_3)
-    branch0_3 = Activation('relu')(branch0_3)
-    # branch1_23 = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(branch1_12)
-
-    x_0 = layers.concatenate([branch0_1, branch0_2, branch0_3], name='mixed0')
-    x_0 = squeeze_excite_block(x_0, ratio=16)
-
-    # x_0 = Conv2D(num_classes, (3, 3), strides=(1, 1), padding='valid',
-    #             kernel_regularizer=regularization)(x_0)
-    x_00 = GlobalAveragePooling2D()(x_0)
-
-
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False, padding='same')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    print 'input layers x:', x.shape
 
     # module 1
     residual = Conv2D(16, (1, 1), strides=(2, 2),
-                      padding='same', use_bias=False)(x_0)
+                      padding='same', use_bias=False)(x)
     residual = BatchNormalization()(residual)
-
     
+
     x = SeparableConv2D(16, (3, 3), padding='same',
                         kernel_regularizer=regularization,
-                        use_bias=False)(x_0)
+                        use_bias=False)(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
     x = SeparableConv2D(16, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
-    x = BatchNormalization()(x) 
+    x = BatchNormalization()(x)
+
     x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-    x = squeeze_excite_block(x, ratio=16)
-    x = layers.add([x, residual])
+    x_1 = layers.add([x, residual])
+    print 'model_1 layers x_1:', x.shape
+
+    # x_1 = UpSampling2D()(x_1)
+    # x_1 = conv2d_bn(x_1, 16, 2, 2, padding='same', strides=(1, 1), 
+    #                 kernel_regularizer=None, name=None)
+    # print x_1.shape
 
 
     # module 2
@@ -200,24 +172,15 @@ def mini_MSE_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                         use_bias=False)(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
-    x = squeeze_excite_block(x, ratio=16)
     x = SeparableConv2D(32, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
     x = BatchNormalization()(x)
+
     x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-    x = squeeze_excite_block(x, ratio=16)
-    x = layers.add([x, residual])
-
-    # module 
-    x = Conv2D(64, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
-               use_bias=False)(x)
-    x = BatchNormalization()(x)
-
-    x_1 = GlobalAveragePooling2D()(x)
-    x_1 = layers.concatenate([x_1, x_00], name='mixed_GAP')
-    print x_1.shape
+    x_2 = layers.add([x, residual])
+    print 'model_2 layers x_2:', x_2.shape
 
     # module 3
     residual = Conv2D(64, (1, 1), strides=(2, 2),
@@ -234,11 +197,11 @@ def mini_MSE_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
     x = BatchNormalization()(x)
+
     x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-    x = squeeze_excite_block(x, ratio=16)
     x_3 = layers.add([x, residual])
-
+    print 'model_3 layers x_3:', x_3.shape
 
     # module 4
     residual = Conv2D(128, (1, 1), strides=(2, 2),
@@ -248,8 +211,163 @@ def mini_MSE_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     x = SeparableConv2D(128, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
+
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+
+    x_4 = layers.add([x, residual])
+    print 'model_4 layers x_4:', x_4.shape
+    
+    # stage_3
+    x_44 = UpSampling2D()(x_4)
+
+    x_33 = SeparableConv2D(128, (1, 1), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_3)
+    x_11 = BatchNormalization()(x_33)
+
+    x_3_add = layers.add([x_44, x_33], name='unsampling_1')
+    x_3_add = SeparableConv2D(224, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_3_add)
+    x_3_add = BatchNormalization()(x_3_add)
+    print 'upsampling layers x_3:', x_33.shape, x_3_add.shape
+
+    # stage_2
+
+    x_33 = UpSampling2D(size=(2, 2))(x_3_add)
+
+    x_22 = SeparableConv2D(224, (1, 1), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_2)
+    x_11 = BatchNormalization()(x_22)
+
+    x_2_add = layers.add([x_22, x_33], name='unsampling_2')
+    x_2_add = SeparableConv2D(224, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_2_add)
+    x_2_add = BatchNormalization()(x_2_add)
+    print 'upsampling layers x_2:', x_2.shape, x_2_add.shape
+
+    # stage_1
+    x_22 = UpSampling2D(size=(2, 2))(x_2_add)
+
+    x_11 = SeparableConv2D(224, (1, 1), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1)
+    x_11 = BatchNormalization()(x_11)
+
+    x_1_add = layers.add([x_11, x_22], name='unsampling_3')
+    x_1_add = SeparableConv2D(224, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_1_add)
+    x_1_add = BatchNormalization()(x_1_add)
+    print 'upsampling layers x_1:', x_11.shape, x_1_add.shape
+
+    # output model
+    x_1_add = GlobalAveragePooling2D()(x_1_add)
+    x_2_add = GlobalAveragePooling2D()(x_2_add)
+    x_3_add = GlobalAveragePooling2D()(x_3_add)
+
+    x = layers.concatenate([x_1_add, x_2_add, x_3_add], name='mixed_predict')
+    x = Dense(num_classes)(x)
+    output = Activation('softmax', name='predictions')(x)
+    
+    # instantiate a Model
+    model = Model(img_input, output) 
+    return model
+
+
+def mini_MSE_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
+    regularization = l2(l2_regularization)
+
+    # base
+    img_input = Input(input_shape)
+    x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(img_input)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    # x = Conv2D(8, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+    #            use_bias=False)(x)
+    # x = Activation('relu')(x)
+
+    branch0_1 = conv2d_bn(x, 8, 1, 1, strides=(1, 1), 
+                            kernel_regularizer=regularization, padding='valid')
+    branch0_1 = SeparableConv2D(16, (3, 3), padding='valid',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(branch0_1)                   
+    branch0_1 = BatchNormalization()(branch0_1)
+    branch0_1 = Activation('relu')(branch0_1)
+    branch0_1 = SeparableConv2D(32, (3, 3), strides=(1, 1), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(branch0_1)
+    branch0_1 = BatchNormalization()(branch0_1)
+    # branch0_1 = Activation('relu')(branch0_1)
+
+    
+    branch0_2 = conv2d_bn(x, 16, 1, 1, strides=(1, 1), padding='valid')
+    branch0_2 = SeparableConv2D(32, (3, 3), strides=(1, 1), padding='valid',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(branch0_2)
+    branch0_2 = BatchNormalization()(branch0_2)
+
+
+
+    branch0_3 = SeparableConv2D(32, (3, 3), strides=(1, 1), padding='valid',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    branch0_3 = BatchNormalization()(branch0_3)
+    branch0_3 = Activation('relu')(branch0_3)
+    # branch1_23 = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(branch1_12)
+
+    x_0 = layers.concatenate([branch0_1, branch0_2, branch0_3], name='mixed0')   
+    # x_0 = squeeze_excite_block(x_0, ratio=16)
+
+    # x_0 = Conv2D(num_classes, (3, 3), strides=(1, 1), padding='valid',
+    #             kernel_regularizer=regularization)(x_0)
+    # x_00 = GlobalAveragePooling2D()(x_0)
+
+
+
+    # module 1
+    residual = Conv2D(64, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x_0)
+    residual = BatchNormalization()(residual)
+
+    
+    x = SeparableConv2D(32, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x_0)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x) 
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+
+    x = squeeze_excite_block(x, ratio=16)
+    x = layers.add([x, residual])
+
+
+    # module 2
+    residual = Conv2D(128, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x)
+    residual = BatchNormalization()(residual)
+    # x_00 = GlobalAveragePooling2D()(x_0)
+
+    x = SeparableConv2D(64, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = squeeze_excite_block(x, ratio=16)
     x = SeparableConv2D(128, (3, 3), padding='same',
                         kernel_regularizer=regularization,
                         use_bias=False)(x)
@@ -259,13 +377,62 @@ def mini_MSE_XCEPTION(input_shape, num_classes, l2_regularization=0.01):
     x = squeeze_excite_block(x, ratio=16)
     x = layers.add([x, residual])
 
+    # module 
+    x = Conv2D(64, (3, 3), strides=(1, 1), kernel_regularizer=regularization,
+               use_bias=False)(x)
+    x = BatchNormalization()(x)
+
+    # x_1 = GlobalAveragePooling2D()(x)
+    # x_1 = layers.concatenate([x_1, x_00], name='mixed_GAP')
+    # print x_1.shape
+
+    # module 3
+    residual = Conv2D(256, (1, 1), strides=(2, 2),
+                      padding='same', use_bias=False)(x)
+    residual = BatchNormalization()(residual)
+
+
+    x = SeparableConv2D(128, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = SeparableConv2D(256, (3, 3), padding='same',
+                        kernel_regularizer=regularization,
+                        use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+
+    x = squeeze_excite_block(x, ratio=16)
+    x_3 = layers.add([x, residual])
+
+
+    # # module 4
+    # residual = Conv2D(128, (1, 1), strides=(2, 2),
+    #                   padding='same', use_bias=False)(x)
+    # residual = BatchNormalization()(residual)
+
+    # x = SeparableConv2D(128, (3, 3), padding='same',
+    #                     kernel_regularizer=regularization,
+    #                     use_bias=False)(x)
+    # x = BatchNormalization()(x)
+    # x = Activation('relu')(x)
+    # x = SeparableConv2D(128, (3, 3), padding='same',
+    #                     kernel_regularizer=regularization,
+    #                     use_bias=False)(x)
+    # x = BatchNormalization()(x)
+    # x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+
+    # x = squeeze_excite_block(x, ratio=16)
+    # x = layers.add([x, residual])
+
     
     # x_2 = layers.concatenate([x_2, x_1], name='mixed_GAP')
 
     # module 
     x = Conv2D(num_classes, (3, 3), strides=(1, 1), 
                 kernel_regularizer=regularization,
-                use_bias=False, padding='same')(x)
+                use_bias=False, padding='same')(x_3)
     x = BatchNormalization()(x)
     x = GlobalAveragePooling2D()(x)
 
@@ -1295,5 +1462,7 @@ if __name__ == "__main__":
     # model = GAP_concate_XCEPTION(input_shape, num_classes)
     # model.summary()
     # mini_MSE_XCEPTION
-    model = mini_MSE_XCEPTION(input_shape, num_classes)
+    # model = mini_MSE_XCEPTION(input_shape, num_classes)
+    # model.summary()
+    model = mini_FPN_XCEPTION(input_shape, num_classes)
     model.summary()
