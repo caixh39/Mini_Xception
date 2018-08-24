@@ -97,20 +97,18 @@ while True:
         except:
             continue
 
-
+        # reshape data type , fitting the model's input 
         gray_face = preprocess_input(gray_face, True)
         gray_face = np.expand_dims(gray_face, 0)
         gray_face = np.expand_dims(gray_face, -1)
-        cfg.emotion_prediction = emotion_classifier.predict(gray_face)
-        
 
+        # model predict
+        cfg.emotion_prediction = emotion_classifier.predict(gray_face)
         cfg.emotion_probability = np.max(cfg.emotion_prediction)
         emotion_label_arg = np.argmax(cfg.emotion_prediction) # max index 
         cfg.emotion_text = emotion_labels[emotion_label_arg]
         emotion_window.append(cfg.emotion_text)
-
-        # # print cfg.emotion_probability, cfg.emotion_text # type(cfg.emotion_probability), type(cfg.emotion_text)
-	
+  
         if len(emotion_window) > frame_window:
             emotion_window.pop(0)
 
@@ -118,7 +116,8 @@ while True:
             emotion_mode = mode(emotion_window)
         except:
             continue
-
+        
+        # drawing box's color
         if cfg.emotion_text == 'angry':
             color = cfg.emotion_probability * np.asarray((255, 0, 0))
         elif cfg.emotion_text == 'sad':
@@ -140,7 +139,7 @@ while True:
                   color, 0, -45, 1, 1)
 
 
-    
+    # saving data    
     if cfg.frame_face_count != -1:
         clos = pd.DataFrame({'Frame':cfg.frame_face_count,
                     'Time':round(cfg.frame_face_time,2),
@@ -171,14 +170,9 @@ while True:
               columns=cfg.EmotionLabels,
               index=np.arange(1)) 
 
-    clos = appendDFToCSV_void(clos,'Emotion_MVI_1137.csv')
+    clos = appendDFToCSV_void(clos,'Emotion_MVI_1137.csv')            
 
-
-#    if detect_fps_flag == 1:
-#        print('time: ' + str(1. / ((time.time() - start))) + ' fps')        
-        
-
-
+    # pop window and close window
     bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
     cv2.imshow('window_frame', bgr_image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
