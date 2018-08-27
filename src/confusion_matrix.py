@@ -4,12 +4,18 @@ warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 import os
 import sys
 import cv2
+import time
 import itertools
 import numpy as np
 import pandas as pd
 from os.path import join
 import matplotlib.pyplot as plt
+from sklearn.metrics import hamming_loss
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import cohen_kappa_score
+from sklearn.metrics import classification_report
+
 # import seaborn as sn
 
 from keras.models import load_model
@@ -24,7 +30,6 @@ from utils.preprocessor import preprocess_input
 
 # parameters for loading data and images
 input_shape = (64, 64, 1)
-class_names = ['angry','disgusted','fear','happy','sad','surprised','neutral']
 
 filename = '../datasets/data/confusion_matrix.csv'
 file_dir = os.path.split(filename)[0]
@@ -38,9 +43,8 @@ test_data_loader = load_fer2013_test('../datasets/fer2013/test.csv', image_size=
 test_faces, test_emotions = test_data_loader[0] ,test_data_loader[1] 
 
 # Load Model
-emotion_model_path = '../trained_models/test_models/fer2013_mini_disgust_Net.149-0.6565.hdf5'
+emotion_model_path = '../trained_models/test_models/fer2013_mini_XCEPTION.107-0.66.hdf5'
 emotion_labels = get_labels('fer2013')
-print emotion_labels
 emotion_classifier = load_model(emotion_model_path, compile=False)
 emotion_target_size = emotion_classifier.input_shape[1:3]
 
@@ -49,8 +53,6 @@ data = np.zeros((len(emotion_labels), len(emotion_labels)))
 test_faces = np.reshape(test_faces,(test_faces.shape[1],test_faces.shape[2],test_faces.shape[3],test_faces.shape[4]))
 
 for i in xrange(test_faces.shape[0]):
-    print test_faces.shape
-
     # reshape image 
     test_ft = preprocess_input(test_faces[i], True)
     test_ft = np.reshape(test_ft,(1,test_ft.shape[0],test_ft.shape[1],test_ft.shape[2]))
@@ -130,20 +132,49 @@ def plot_confusion_matrix(cm, classes,
     plt.xlabel('Predicted label')
 
 
-
+class_names = ['angry','disgusted','fear','happy','sad','surprised','neutral']
 label_file = pd.read_csv(filename)
 y_true = label_file['True']
 y_pred = label_file['Predicted']
 y_true = np.array(y_true)
 y_pred = np.array(y_pred)
-print y_true, len(y_true)
-print y_pred, len(y_pred)
+
+
+#  the fraction of correct predictions
+# mini_Xception_author = 0.6597938144329897, author_disgusted=0.6514349400947339, 
+# 48x48=0.6539426023962106
+
+accuracy = 0
+accuracy = accuracy_score(y_true, y_pred)
+print accuracy
+
+
+# cohen_kappa_score: Scores above .8 are generally considered good agreement
+# mini_Xception_author: 0.5884103182361573, author_disgusted=0.5789161870609528
+# 48x48=0.5817710986824143
+ck_score = 0
+ck_score = cohen_kappa_score(y_true, y_pred)
+print ck_score
 
 # Compute confusion matrix
 cnf_matrix = confusion_matrix(y_true, y_pred)
 print cnf_matrix
 np.set_printoptions(precision=2)
 
+# classification_report: precision, recall, f1-score, support
+''' precision: 
+    recall:  
+    f1-score: 
+    support: 
+    detail: http://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix '''
+classification_metric = classification_report(y_true, y_pred, target_names=class_names)
+print classification_metric
+
+# hanming loss
+# mini_Xception_author = 0.3402061855670103
+distance_loss = 0
+distance_loss = hamming_loss(y_true, y_pred)
+print distance_loss
 
 # Plot non-normalized confusion matrix
 plt.figure()
@@ -155,5 +186,20 @@ plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
                       title='Normalized confusion matrix')
 
+
+plt.savefig('../images/confusion_matrix/'+ emotion_model_path[38:-5] + 'confusion_matrix.png', format='png')
 plt.show()
-plt.savefig('../images/confusion_matrix.png', format='png')
+
+
+
+# Cohen's kappa: a statistic that measures inter-annotator agreement
+# cohen_kappa_score(y1, y2[, labels, weights, ... ]) 
+
+# Compute confusion matrix to evaluate the accuracy of a classification
+# confusion_matrix(y_true, y_pred[, labels,..])   
+
+# Average hinge loss (non-regularized)
+# hinge_loss(y_true, pred_decision[, labels, ..])  
+
+# Compute the Matthews correlation coefficient (MCC)
+# matthews_corrcoef(y_true, y_pred[, ..])  
