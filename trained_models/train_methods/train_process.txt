@@ -1,0 +1,18 @@
+1.adam_0.001: fer2013_0828_GAP_concate_XCEPTION.29-0.6116.hdf5, stop 20180828: 9:00~10:54, 模型文件5.7M
+              tensorboard = events.out.tfevents.1535419706
+2.adam_0.001: base on fer2013_0828_GAP_concate_XCEPTION.29-0.6116.hdf5, 继续模型训练 20180828_12:04
+              20:13 fer2013_0828_GAP_concate_XCEPTION.163-0.6590.hdf5, test_acc = 66.62%, 38s,time=10ms/step
+              tensorboard = events.out.tfevents.1535428979
+3.SGD_0.01: base on fer2013_0828_GAP_concate_XCEPTION.163-0.6590.hdf5， 继续模型训练 20180828_21:25，模型文件变小 3.9M
+            21:25 fer2013_0828_GAP_concate_XCEPTION.01-0.6609.hdf5, test_acc = 66.48%
+            21:28 fer2013_0828_GAP_concate_XCEPTION.02-0.6631.hdf5, test_acc = 66.98%
+            22:10 fer2013_0828_GAP_concate_XCEPTION.16-0.6651.hdf5, test_acc = 67.12%, 37s,time=10ms/step
+            22:31 fer2013_0828_GAP_concate_XCEPTION.23-0.6676.hdf5, test_acc = 66.89%
+            进行 model_evluate, accuracy 值最高的作为下一次模型训练
+4.SGD_0.01:  base on fer2013_0828_GAP_concate_XCEPTION.16-0.6651.hdf5， 继续模型训练 23:11
+            23:11 fer2013_0828_GAP_concate_XCEPTION.01-0.6595.hdf5, test_acc = 67.07%
+            23:20 fer2013_0828_GAP_concate_XCEPTION.04-0.6637.hdf5, test_acc = 67.68%， time=10ms/step
+            tensorboard = events.out.tfevents.1535468972
+
+
+PS：optimize由adam变为SGD后，模型文件变小
