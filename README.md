@@ -18,5 +18,5 @@ Facial Emotion Recognition
 
 #### Problem:
 - keras.preprocessing.image.load_img(image_path, grayscale,target_size) 
-- open keras.preprocessing.image.py 
+- open ../python2.7/dist_packages/keras_preprocessing.image.py 
 - comment " 'load_img' function else color mode"
