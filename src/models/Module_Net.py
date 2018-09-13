@@ -17,6 +17,7 @@ from keras.layers import BatchNormalization
 from keras.layers import GlobalAveragePooling2D
 from keras.layers import GlobalMaxPooling2D
 from keras.layers import Conv2D
+from keras.layers import Lambda
 from keras import initializers
 from keras import regularizers
 from keras import constraints
@@ -77,10 +78,8 @@ def conv2d_bn(x,filters,num_row,num_col,padding='same',strides=(1, 1),
         bn_name = None
         conv_name = None
 
-    if K.image_data_format() == 'channels_first':
-        bn_axis = 1
-    else:
-        bn_axis = 3   
+
+    bn_axis = 3   
     x = layers.Conv2D(
         filters, (num_row, num_col),
         strides=strides,
@@ -91,6 +90,9 @@ def conv2d_bn(x,filters,num_row,num_col,padding='same',strides=(1, 1),
     x = layers.BatchNormalization(axis=bn_axis, scale=False, name=bn_name)(x)
     x = layers.Activation('relu', name=name)(x)
     return x
+
+
+
 
 class DepthwiseConv2D(Conv2D):
     """Depthwise separable 2D convolution.
@@ -271,4 +273,79 @@ def depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
                name='conv_pw_%d' % block_id)(x)
     x = BatchNormalization(axis=channel_axis)(x)
     x = layers.Activation('relu')(x)
+    return x
+
+
+
+def inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
+    """Adds a Inception-ResNet block.
+
+    This function builds 3 types of Inception-ResNet blocks mentioned
+        - Inception-ResNet-A: `block_type='block35'`
+        - Inception-ResNet-B: `block_type='block17'`
+        - Inception-ResNet-C: `block_type='block8'`
+
+    # Arguments
+        x: input tensor.
+        scale: scaling factor to scale the residuals (i.e., the output of
+            passing `x` through an inception module) before adding them
+            to the shortcut branch. Let `r` be the output from the residual branch,
+            the output of this block will be `x + scale * r`.
+        block_type: `'block35'`, `'block17'` or `'block8'`, determines
+            the network structure in the residual branch.
+        block_idx: an `int` used for generating layer names. The Inception-ResNet blocks
+            are repeated many times in this network. We use `block_idx` to identify
+            each of the repetitions. For example, the first Inception-ResNet-A block
+            will have `block_type='block35', block_idx=0`, ane the layer names will have
+            a common prefix `'block35_0'`.
+        activation: activation function to use at the end of the block
+            (see [activations](keras./activations.md)).
+            When `activation=None`, no activation is applied
+            (i.e., "linear" activation: `a(x) = x`).
+
+    # Returns
+        Output tensor for the block.
+
+    # Raises
+        ValueError: if `block_type` is not one of `'block35'`,
+            `'block17'` or `'block8'`.
+    """
+    if block_type == 'block35':
+        branch_0 = conv2d_bn(x, 32, 1, 1)
+        branch_1 = conv2d_bn(x, 32, 1, 1)
+        branch_1 = conv2d_bn(branch_1, 32, 3, 3)
+        branch_2 = conv2d_bn(x, 32, 1, 1)
+        branch_2 = conv2d_bn(branch_2, 48, 3, 3)
+        branch_2 = conv2d_bn(branch_2, 64, 3, 3)
+        branches = [branch_0, branch_1, branch_2]
+    elif block_type == 'block17':
+        branch_0 = conv2d_bn(x, 192, 1, 1)
+        branch_1 = conv2d_bn(x, 128, 1, 1)
+        branch_1 = conv2d_bn(branch_1, 160, 1, 7)
+        branch_1 = conv2d_bn(branch_1, 192, 7, 1)
+        branches = [branch_0, branch_1]
+    elif block_type == 'block8':
+        branch_0 = conv2d_bn(x, 192, 1, 1)
+        branch_1 = conv2d_bn(x, 192, 1, 1)
+        branch_1 = conv2d_bn(branch_1, 224, 1, 3)
+        branch_1 = conv2d_bn(branch_1, 256, 3, 1)
+        branches = [branch_0, branch_1]
+    else:
+        raise ValueError('Unknown Inception-ResNet block type. '
+                         'Expects "block35", "block17" or "block8", '
+                         'but got: ' + str(block_type))
+
+    block_name = block_type + '_' + str(block_idx)
+    channel_axis = 3
+    mixed = layers.Concatenate(axis=channel_axis, name=block_name + '_mixed')(branches)
+    up = conv2d_bn(mixed,K.int_shape(x)[channel_axis],
+                   1,1,
+                   name=block_name + '_conv')
+
+    x = Lambda(lambda inputs, scale: inputs[0] + inputs[1] * scale,
+               output_shape=K.int_shape(x)[1:],
+               arguments={'scale': scale},
+               name=block_name)([x, up])
+    if activation is not None:
+        x = Activation(activation, name=block_name + '_ac')(x)
     return x
