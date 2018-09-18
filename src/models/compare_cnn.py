@@ -265,10 +265,10 @@ def InceptionV3(input_shape, num_classes, l2_regularization=0.01, include_top=Tr
     img_input = Input(input_shape)
     channel_axis = 3
 
-    x = conv2d_bn(img_input, 32, 3, 3, strides=(2, 2), padding='valid')
+    x = conv2d_bn(img_input, 32, 3, 3, strides=(1, 1), padding='valid')
     x = conv2d_bn(x, 32, 3, 3, padding='valid')
     x = conv2d_bn(x, 64, 3, 3)
-    x = MaxPooling2D((3, 3), strides=(2, 2))(x)
+    x = MaxPooling2D((3, 3), strides=(1, 1))(x)
 
     x = conv2d_bn(x, 80, 1, 1, padding='valid')
     x = conv2d_bn(x, 192, 3, 3, padding='valid')
@@ -460,7 +460,7 @@ def InceptionResNetV2(input_shape, num_classes, l2_regularization=0.01, include_
     img_input = Input(input_shape) 
 
     # Stem block: 35 x 35 x 192
-    x = conv2d_bn(img_input, 32, 3, 3,strides=2, padding='valid')
+    x = conv2d_bn(img_input, 32, 3, 3,strides=1, padding='valid')
     x = conv2d_bn(x, 32, 3, 3, padding='valid')
     x = conv2d_bn(x, 64, 3,3)
     x = MaxPooling2D(3, strides=2)(x)
@@ -550,7 +550,7 @@ def InceptionResNetV2(input_shape, num_classes, l2_regularization=0.01, include_
 
 
 if __name__ == "__main__":
-    input_shape = (96, 96, 1)
+    input_shape = (64, 64, 1)
     num_classes = 7
 
     # model = Xception(input_shape, num_classes)
@@ -561,9 +561,9 @@ if __name__ == "__main__":
     # model.summary()
     # model = plot_model(model, to_file='../../images/models/MobileNet_2.png', show_shapes=True, show_layer_names=True)
 
-    # model = InceptionV3(input_shape, num_classes, include_top=True)
-    # model.summary()
-
     model = InceptionResNetV2(input_shape, num_classes, include_top=True)
     model.summary()
+
+    # model = InceptionResNetV2(input_shape, num_classes, include_top=True)
+    # model.summary()
     # model = plot_model(model, to_file='../../images/models/InceptionResNetV2.png', show_shapes=False, show_layer_names=False)

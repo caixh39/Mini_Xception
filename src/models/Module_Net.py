@@ -1,4 +1,5 @@
 import warnings
+
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 import numpy as np
@@ -18,6 +19,7 @@ from keras.layers import GlobalAveragePooling2D
 from keras.layers import GlobalMaxPooling2D
 from keras.layers import Conv2D
 from keras.layers import Lambda
+from keras.layers import SeparableConv2D
 from keras import initializers
 from keras import regularizers
 from keras import constraints
@@ -26,6 +28,10 @@ from keras.utils import conv_utils
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras.engine import InputSpec
+from keras.regularizers import l2
+
+l2_regularization = 0.01
+regularization = l2(l2_regularization)
 
 
 def squeeze_excite_block(input, ratio=16):
@@ -45,7 +51,7 @@ def squeeze_excite_block(input, ratio=16):
     # kernel_initializer='he_normal', use_bias=False
     se = Dense(filters // ratio, activation='relu', kernel_initializer='he_uniform', use_bias=False)(se)
     se = Dense(filters, activation='sigmoid', kernel_initializer='glorot_uniform', use_bias=False)(se)
-    
+
     if K.image_data_format() == 'channels_first':
         se = Permute((3, 1, 2))(se)
 
@@ -53,10 +59,9 @@ def squeeze_excite_block(input, ratio=16):
     return x
 
 
-
-def conv2d_bn(x,filters,num_row,num_col,padding='same',strides=(1, 1),
-            kernel_regularizer=None,
-            name=None):
+def conv2d_bn(x, filters, num_row, num_col, padding='same', strides=(1, 1),
+              kernel_regularizer=regularization,
+              name=None):
     """Utility function to apply conv + BN.
     # Arguments
         x: input tensor.
@@ -78,8 +83,7 @@ def conv2d_bn(x,filters,num_row,num_col,padding='same',strides=(1, 1),
         bn_name = None
         conv_name = None
 
-
-    bn_axis = 3   
+    bn_axis = 3
     x = layers.Conv2D(
         filters, (num_row, num_col),
         strides=strides,
@@ -92,6 +96,41 @@ def conv2d_bn(x,filters,num_row,num_col,padding='same',strides=(1, 1),
     return x
 
 
+def sep_conv2d_bn(x, filters, num_row, num_col, padding='same', strides=(1, 1),
+                  kernel_regularizer = regularization,
+                  name=None):
+    """Utility function to apply conv + BN.
+    # Arguments
+        x: input tensor.
+        filters: filters in `Conv2D`.
+        num_row: height of the convolution kernel.
+        num_col: width of the convolution kernel.
+        padding: padding mode in `Conv2D`.
+        strides: strides in `Conv2D`.
+        name: name of the ops; will become `name + '_conv'`
+            for the convolution and `name + '_bn'` for the
+            batch norm layer.
+    # Returns
+        Output tensor after applying `Conv2D` and `BatchNormalization`.
+    """
+    if name is not None:
+        bn_name = name + '_bn'
+        conv_name = name + '_sep_conv'
+    else:
+        bn_name = None
+        conv_name = None
+
+    bn_axis = 3
+
+    x = SeparableConv2D(filters, (num_row, num_col),
+                        strides=strides,
+                        padding=padding,
+                        kernel_regularizer=None,
+                        use_bias=False,
+                        name=conv_name)(x)
+    x = BatchNormalization(axis=bn_axis, scale=False, name=bn_name)(x)
+    x = Activation('relu', name=name)(x)
+    return x
 
 
 class DepthwiseConv2D(Conv2D):
@@ -231,19 +270,19 @@ def conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1)):
     # Input shape (samples, rows, cols, channels)` if data_format='channels_last'.
     # Returns: Output tensor of block.
     """
-    channel_axis = -1 
+    channel_axis = -1
     filters = int(filters * alpha)
-    x = Conv2D(filters, kernel, 
-                padding='same',
-                use_bias=False, 
-                strides=strides)(inputs)
+    x = Conv2D(filters, kernel,
+               padding='same',
+               use_bias=False,
+               strides=strides)(inputs)
     x = BatchNormalization(axis=channel_axis)(x)
     x = layers.Activation('relu')(x)
     return x
 
 
 def depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
-                          depth_multiplier=1, strides=(1, 1), block_id=1):
+                         depth_multiplier=1, strides=(1, 1), block_id=1):
     """Adds a depthwise convolution block.
        A depthwise convolution block consists of a depthwise conv,
        batch normalization, relu6, pointwise convolution,
@@ -274,7 +313,6 @@ def depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
     x = BatchNormalization(axis=channel_axis)(x)
     x = layers.Activation('relu')(x)
     return x
-
 
 
 def inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
@@ -338,8 +376,8 @@ def inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
     block_name = block_type + '_' + str(block_idx)
     channel_axis = 3
     mixed = layers.Concatenate(axis=channel_axis, name=block_name + '_mixed')(branches)
-    up = conv2d_bn(mixed,K.int_shape(x)[channel_axis],
-                   1,1,
+    up = conv2d_bn(mixed, K.int_shape(x)[channel_axis],
+                   1, 1,
                    name=block_name + '_conv')
 
     x = Lambda(lambda inputs, scale: inputs[0] + inputs[1] * scale,
