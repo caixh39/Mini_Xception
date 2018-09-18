@@ -8,7 +8,9 @@ Description: Train emotion classification model
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
-
+import os
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+os.environ["CUDA_VISIBLE_DEVICES"]="2,3"
 
 from keras.callbacks import ReduceLROnPlateau,TensorBoard
 from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
@@ -21,8 +23,9 @@ import argparse
 from utils.datasets import DataManager
 from utils.preprocessor import preprocess_input
 # from utils.visual_callbacks import AccLossPlotter
-from models.cnn import mini_XCEPTION, GAP_concate_XCEPTION, mini_concate_V3_XCEPTION
-from models.cnn import parameters_mini_XCEPTION, mini_concate_XCEPTION
+from models.cnn import mini_XCEPTION, mini_concate_V3_XCEPTION
+from models.cnn import mini_concate_V2_XCEPTION
+from models.compare_cnn import InceptionV3, InceptionResNetV2
 
 
 
@@ -31,11 +34,12 @@ num_epochs = 10000
 input_shape = (64, 64, 1)
 verbose = 1
 num_classes = 7
-patience = 80
-gpu_count = 4
-batch_size = 32* gpu_count
+patience = 100
+gpu_count = 2
+batch_size = 16* gpu_count
 base_path = '../trained_models/emotion_models/'
-# models_path = base_path + 'fer2013_0831_mini_concate_V3_XCEPTION.127-0.6609.hdf5'
+# models_path = base_path + 'fer2013_0903_mini_concate_V2_XCEPTION.105-0.6762.hdf5'
+
 
 # retrain
 # model = load_model(models_path)
@@ -55,8 +59,9 @@ data_generator = ImageDataGenerator(
 
 # Instantiate the base model
 # (here, we do it on CPU, which is optional).
-with tf.device('/cpu:0' if gpu_count > 1 else '/gpu:0'):
-    model =  mini_concate_V3_XCEPTION(input_shape, num_classes)
+# with tf.device('/cpu:0' if gpu_count > 1 else '/gpu:0'):
+# model = load_model(models_path)
+model = InceptionResNetV2(input_shape, num_classes)
 
 # Replicates the model on N GPUs.
 # This assumes that your machine has N available GPUs.
@@ -76,7 +81,7 @@ for dataset_name in datasets:
     print('Training dataset:', dataset_name)
 
     # saving model after one epoch finishing
-    trained_models_path = base_path + dataset_name + '_0901__mini_concate_V3_XCEPTION'
+    trained_models_path = base_path + dataset_name + '_InceptionResNetV2_0918'
     model_names = trained_models_path + '.{epoch:02d}-{val_acc:.4f}.hdf5' 
     model_checkpoint = ModelCheckpoint(model_names, monitor='val_acc', verbose=1,
                                       save_best_only=True, mode='auto',period=1)
@@ -85,10 +90,10 @@ for dataset_name in datasets:
     # a set callbacks functions, and visualization by tensorboard
     log_file_path = base_path + dataset_name + trained_models_path[40:] + '_emotion_training.log'
     csv_logger = CSVLogger(log_file_path, append=False)
-    early_stop = EarlyStopping('val_loss', patience=patience)
+    early_stop = EarlyStopping('val_acc', patience=patience)
     reduce_lr = ReduceLROnPlateau('val_acc', factor=0.1,
                                   patience=int(patience/4), verbose=1)
-    tensor_board = TensorBoard(log_dir='../log_dir',
+    tensor_board = TensorBoard(log_dir='../log_dir/InceptionResNetV2/',
                              histogram_freq=1,
                              write_graph=True,
                              write_images=True)
