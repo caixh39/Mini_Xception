@@ -1,30 +1,30 @@
-import warnings
-warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from keras.layers import Activation, Convolution2D, Dropout, Conv2D, UpSampling2D
-from keras.layers import AveragePooling2D, BatchNormalization
+from keras.layers import AveragePooling2D, BatchNormalization, Lambda
 from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
-from keras.models import Sequential
 from keras.layers import Flatten, Concatenate
-from keras.models import Model
 from keras.layers import Input, merge, ZeroPadding2D
 from keras.layers import MaxPooling2D, Lambda
 from keras.layers import SeparableConv2D
 from keras.layers import Reshape, Dense, multiply, Permute
 from keras.layers.core import Dense, Dropout
+from keras.models import Model
+from keras.models import Sequential
 from keras.utils import conv_utils
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras.engine import InputSpec
 from keras.regularizers import l2
-from keras import layers,initializers,regularizers,constraints
+from keras import layers, initializers, regularizers, constraints
+from keras.engine.topology import get_source_inputs
+import numpy as np
 from keras import backend as K
 from keras.utils import plot_model
 from Module_Net import DepthwiseConv2D
 from Module_Net import depthwise_conv_block
 from Module_Net import conv_block
-from Module_Net import conv2d_bn
+from Module_Net import conv2d_bn, _conv_block
 from Module_Net import inception_resnet_block
+from Module_Net import block, inverted_residual_block
 
 
 # Total params: 20,875,247
@@ -32,7 +32,7 @@ def Xception(input_shape, num_classes, l2_regularization=0.01, include_top=True,
     regularization = l2(l2_regularization)
 
     # base
-    img_input = Input(input_shape)    
+    img_input = Input(input_shape)
     x = layers.Conv2D(32, (3, 3),
                       strides=(2, 2),
                       use_bias=False,
@@ -192,7 +192,7 @@ def Xception(input_shape, num_classes, l2_regularization=0.01, include_top=True,
 
 
 ## MobileNet:
-def MobileNet(input_shape=None, num_classes= None, include_top=True,
+def MobileNet(input_shape=None, num_classes=None, include_top=True,
               alpha=1.0, depth_multiplier=1, dropout=0.5,
               pooling='avg'):
     """Instantiates the MobileNet architecture.
@@ -214,15 +214,15 @@ def MobileNet(input_shape=None, num_classes= None, include_top=True,
     x = depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1)
 
     x = depthwise_conv_block(x, 128, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=2)
+                             strides=(2, 2), block_id=2)
     x = depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3)
 
     x = depthwise_conv_block(x, 256, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=4)
+                             strides=(2, 2), block_id=4)
     x = depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5)
 
     x = depthwise_conv_block(x, 512, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=6)
+                             strides=(2, 2), block_id=6)
     x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=7)
     x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=8)
     x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=9)
@@ -230,7 +230,7 @@ def MobileNet(input_shape=None, num_classes= None, include_top=True,
     x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=11)
 
     x = depthwise_conv_block(x, 1024, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=12)
+                             strides=(2, 2), block_id=12)
     x = depthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13)
 
     if include_top:
@@ -244,7 +244,7 @@ def MobileNet(input_shape=None, num_classes= None, include_top=True,
         x = Dropout(dropout, name='dropout')(x)
         x = Conv2D(num_classes, (1, 1), padding='same')(x)
         x = Reshape((num_classes,), name='reshape_2')(x)
-        x = Activation('softmax', name='act_softmax')(x)        
+        x = Activation('softmax', name='act_softmax')(x)
     else:
         if pooling == 'avg':
             x = GlobalAveragePooling2D()(x)
@@ -452,17 +452,18 @@ def InceptionV3(input_shape, num_classes, l2_regularization=0.01, include_top=Tr
     model = Model(img_input, x, name='inception_v3')
     return model
 
+
 # Inception-ResNet v2 architecture
 def InceptionResNetV2(input_shape, num_classes, l2_regularization=0.01, include_top=True, pooling=None):
     regularization = l2(l2_regularization)
 
     # base
-    img_input = Input(input_shape) 
+    img_input = Input(input_shape)
 
     # Stem block: 35 x 35 x 192
-    x = conv2d_bn(img_input, 32, 3, 3,strides=1, padding='valid')
+    x = conv2d_bn(img_input, 32, 3, 3, strides=1, padding='valid')
     x = conv2d_bn(x, 32, 3, 3, padding='valid')
-    x = conv2d_bn(x, 64, 3,3)
+    x = conv2d_bn(x, 64, 3, 3)
     x = MaxPooling2D(3, strides=2)(x)
     x = conv2d_bn(x, 80, 1, 1, padding='valid')
     x = conv2d_bn(x, 192, 3, 3, padding='valid')
@@ -541,11 +542,106 @@ def InceptionResNetV2(input_shape, num_classes, l2_regularization=0.01, include_
         elif pooling == 'max':
             x = GlobalMaxPooling2D()(x)
 
-
     # Create model
     model = Model(img_input, x, name='inception_resnet_v2')
 
     return model
+
+
+## ShuffleNet
+def ShuffleNet(input_shape=None, num_classes=None, include_top=True, scale_factor=1.0, pooling='max',
+               groups=1, num_shuffle_units=[3, 7, 3],
+               bottleneck_ratio=0.25):
+    """
+    ShuffleNet implementation for Keras 2 haha
+        number of classes to predict
+    """
+    name = "ShuffleNet_%.2gX_g%d_br_%.2g_%s" % (
+        scale_factor, groups, bottleneck_ratio, "".join([str(x) for x in num_shuffle_units]))
+
+    img_input = Input(input_shape)
+
+    out_dim_stage_two = {1: 144, 2: 200, 3: 240, 4: 272, 8: 384}
+    if groups not in out_dim_stage_two:
+        raise ValueError("Invalid number of groups.")
+
+    if pooling not in ['max', 'avg']:
+        raise ValueError("Invalid value for pooling.")
+
+    if not (float(scale_factor) * 4).is_integer():
+        raise ValueError("Invalid value for scale_factor. Should be x over 4.")
+
+    exp = np.insert(np.arange(0, len(num_shuffle_units), dtype=np.float32), 0, 0)
+    out_channels_in_stage = 2 ** exp
+    out_channels_in_stage *= out_dim_stage_two[groups]  # calculate output channels for each stage
+    out_channels_in_stage[0] = 24  # first stage has always 24 output channels
+    out_channels_in_stage *= scale_factor
+    out_channels_in_stage = out_channels_in_stage.astype(int)
+
+    # create shufflenet architecture
+    x = Conv2D(filters=out_channels_in_stage[0], kernel_size=(3, 3), padding='same',
+               use_bias=False, strides=(2, 2), activation="relu", name="conv1")(img_input)
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same', name="maxpool1")(x)
+
+    # create stages containing shufflenet units beginning at stage 2
+    for stage in range(0, len(num_shuffle_units)):
+        repeat = num_shuffle_units[stage]
+        x = block(x, out_channels_in_stage, repeat=repeat,
+                  bottleneck_ratio=bottleneck_ratio,
+                  groups=groups, stage=stage + 2)
+
+    if pooling == 'avg':
+        x = GlobalAveragePooling2D(name="global_pool")(x)
+    elif pooling == 'max':
+        x = GlobalMaxPooling2D(name="global_pool")(x)
+
+    if include_top:
+        x = Dense(units=num_classes, name="fc")(x)
+        x = Activation('softmax', name='softmax')(x)
+
+    model = Model(inputs=img_input, outputs=x, name=name)
+
+    return model
+
+
+def MobileNetv2(input_shape, num_classes):
+    """MobileNetv2
+    This function defines a MobileNetv2 architectures.
+
+    # Arguments
+        input_shape: An integer or tuple/list of 3 integers, shape
+            of input tensor.
+        k: Integer, number of classes.
+    # Returns
+        MobileNetv2 model.
+    """
+
+    inputs = Input(shape=input_shape)
+    x = _conv_block(inputs, 32, (3, 3), strides=(2, 2))
+
+    x = inverted_residual_block(x, 16, (3, 3), t=1, strides=1, n=1)
+    x = inverted_residual_block(x, 24, (3, 3), t=6, strides=2, n=2)
+    x = inverted_residual_block(x, 32, (3, 3), t=6, strides=2, n=3)
+    x = inverted_residual_block(x, 64, (3, 3), t=6, strides=2, n=4)
+    x = inverted_residual_block(x, 96, (3, 3), t=6, strides=1, n=3)
+    x = inverted_residual_block(x, 160, (3, 3), t=6, strides=2, n=3)
+    x = inverted_residual_block(x, 320, (3, 3), t=6, strides=1, n=1)
+
+    x = _conv_block(x, 1280, (1, 1), strides=(1, 1))
+    x = GlobalAveragePooling2D()(x)
+    x = Reshape((1, 1, 1280))(x)
+    x = Dropout(0.3, name='Dropout')(x)
+    x = Conv2D(num_classes, (1, 1), padding='same')(x)
+
+    x = Activation('softmax', name='softmax')(x)
+    output = Reshape((num_classes,))(x)
+
+    model = Model(inputs, output)
+    plot_model(model, to_file='../../images/MobileNetv2.png', show_shapes=True)
+
+    return model
+
+
 
 
 
@@ -555,15 +651,17 @@ if __name__ == "__main__":
 
     # model = Xception(input_shape, num_classes)
     # model.summary()
-    # model = plot_model(model, to_file='../../images/models/XceptionNet_0913.png', show_shapes=False, show_layer_names=False)
+
+    model = MobileNetv2(input_shape, num_classes)
+    model.summary()
 
     # model = MobileNet(input_shape, num_classes, include_top=True)
     # model.summary()
     # model = plot_model(model, to_file='../../images/models/MobileNet_2.png', show_shapes=True, show_layer_names=True)
 
-    model = InceptionResNetV2(input_shape, num_classes, include_top=True)
-    model.summary()
-
     # model = InceptionResNetV2(input_shape, num_classes, include_top=True)
+    # model.summary()
+
+    # model = ShuffleNet(input_shape, num_classes, include_top=True)
     # model.summary()
     # model = plot_model(model, to_file='../../images/models/InceptionResNetV2.png', show_shapes=False, show_layer_names=False)
