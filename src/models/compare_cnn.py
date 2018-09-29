@@ -16,11 +16,13 @@ from keras.engine import InputSpec
 from keras.regularizers import l2
 from keras import layers, initializers, regularizers, constraints
 from keras.engine.topology import get_source_inputs
+from keras.applications.mobilenet import MobileNet
+from keras.utils.generic_utils import CustomObjectScope
 import numpy as np
 from keras import backend as K
 from keras.utils import plot_model
 from Module_Net import DepthwiseConv2D
-from Module_Net import depthwise_conv_block
+from Module_Net import _depthwise_conv_block, _depthwise_conv_block_v2
 from Module_Net import conv_block
 from Module_Net import conv2d_bn, _conv_block
 from Module_Net import inception_resnet_block
@@ -190,48 +192,41 @@ def Xception(input_shape, num_classes, l2_regularization=0.01, include_top=True,
 
     return model
 
-
-## MobileNet:
+## MobileNet_V1:
 def MobileNet(input_shape=None, num_classes=None, include_top=True,
-              alpha=1.0, depth_multiplier=1, dropout=0.5,
+              alpha=1.0, depth_multiplier=1, dropout=1e-3,
               pooling='avg'):
     """Instantiates the MobileNet architecture.
-    Note that only TensorFlow is supported for now,
-    To load a MobileNet model via `load_model`, import the custom
-    objects `relu6` and `DepthwiseConv2D` and pass them to the
+    import the custom objects `relu6` and `DepthwiseConv2D` and pass them to the
     `custom_objects` parameter.
-    E.g.
-    model = load_model('mobilenet.h5', custom_objects={
-                       'relu6': mobilenet.relu6,
-                       'DepthwiseConv2D': mobilenet.DepthwiseConv2D})
     # Returns: A Keras model instance"""
     row_axis, col_axis = (0, 1)
     rows = input_shape[row_axis]
     cols = input_shape[col_axis]
-    img_input = Input(input_shape)
+    inputs = Input(input_shape)
 
-    x = conv_block(img_input, 32, alpha, strides=(2, 2))
-    x = depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1)
+    x = _conv_block(inputs, 32, alpha, strides=(2, 2))
+    x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1)
 
-    x = depthwise_conv_block(x, 128, alpha, depth_multiplier,
-                             strides=(2, 2), block_id=2)
-    x = depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3)
+    x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
+                              strides=(2, 2), block_id=2)
+    x = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3)
 
-    x = depthwise_conv_block(x, 256, alpha, depth_multiplier,
-                             strides=(2, 2), block_id=4)
-    x = depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5)
+    x = _depthwise_conv_block(x, 256, alpha, depth_multiplier,
+                              strides=(2, 2), block_id=4)
+    x = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5)
 
-    x = depthwise_conv_block(x, 512, alpha, depth_multiplier,
-                             strides=(2, 2), block_id=6)
-    x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=7)
-    x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=8)
-    x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=9)
-    x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=10)
-    x = depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=11)
+    x = _depthwise_conv_block(x, 512, alpha, depth_multiplier,
+                              strides=(2, 2), block_id=6)
+    x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=7)
+    x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=8)
+    x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=9)
+    x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=10)
+    x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=11)
 
-    x = depthwise_conv_block(x, 1024, alpha, depth_multiplier,
-                             strides=(2, 2), block_id=12)
-    x = depthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13)
+    x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier,
+                              strides=(2, 2), block_id=12)
+    x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13)
 
     if include_top:
         if K.image_data_format() == 'channels_first':
@@ -242,9 +237,10 @@ def MobileNet(input_shape=None, num_classes=None, include_top=True,
         x = GlobalAveragePooling2D()(x)
         x = Reshape(shape, name='reshape_1')(x)
         x = Dropout(dropout, name='dropout')(x)
-        x = Conv2D(num_classes, (1, 1), padding='same')(x)
-        x = Reshape((num_classes,), name='reshape_2')(x)
+        x = Conv2D(num_classes, (1, 1),
+                   padding='same', name='conv_preds')(x)
         x = Activation('softmax', name='act_softmax')(x)
+        x = Reshape((num_classes,), name='reshape_2')(x)
     else:
         if pooling == 'avg':
             x = GlobalAveragePooling2D()(x)
@@ -252,9 +248,47 @@ def MobileNet(input_shape=None, num_classes=None, include_top=True,
             x = GlobalMaxPooling2D()(x)
 
     # Create model.
-    model = Model(img_input, x, name='MobileNet')
+    model = Model(inputs, x, name='mobilenet_%0.2f_%s' % (alpha, rows))
+    return model
+
+
+def MobileNetv2(input_shape, num_classes):
+    """MobileNetv2
+    This function defines a MobileNetv2 architectures.
+
+    # Arguments
+        input_shape: An integer or tuple/list of 3 integers, shape
+            of input tensor.
+        k: Integer, number of classes.
+    # Returns
+        MobileNetv2 model.
+    """
+
+    inputs = Input(shape=input_shape)
+    x = _conv_block(inputs, 32, (3, 3), strides=(2, 2))
+
+    x = inverted_residual_block(x, 16, (3, 3), t=1, strides=1, n=1)
+    x = inverted_residual_block(x, 24, (3, 3), t=6, strides=2, n=2)
+    x = inverted_residual_block(x, 32, (3, 3), t=6, strides=2, n=3)
+    x = inverted_residual_block(x, 64, (3, 3), t=6, strides=2, n=4)
+    x = inverted_residual_block(x, 96, (3, 3), t=6, strides=1, n=3)
+    x = inverted_residual_block(x, 160, (3, 3), t=6, strides=2, n=3)
+    x = inverted_residual_block(x, 320, (3, 3), t=6, strides=1, n=1)
+
+    x = _conv_block(x, 1280, (1, 1), strides=(1, 1))
+    x = GlobalAveragePooling2D()(x)
+    x = Reshape((1, 1, 1280))(x)
+    x = Dropout(0.3, name='Dropout')(x)
+    x = Conv2D(num_classes, (1, 1), padding='same')(x)
+
+    x = Activation('softmax', name='softmax')(x)
+    output = Reshape((num_classes,))(x)
+
+    model = Model(inputs, output)
+    plot_model(model, to_file='../../images/MobileNetv2.png', show_shapes=True)
 
     return model
+
 
 
 # Inception V3
@@ -604,46 +638,6 @@ def ShuffleNet(input_shape=None, num_classes=None, include_top=True, scale_facto
     return model
 
 
-def MobileNetv2(input_shape, num_classes):
-    """MobileNetv2
-    This function defines a MobileNetv2 architectures.
-
-    # Arguments
-        input_shape: An integer or tuple/list of 3 integers, shape
-            of input tensor.
-        k: Integer, number of classes.
-    # Returns
-        MobileNetv2 model.
-    """
-
-    inputs = Input(shape=input_shape)
-    x = _conv_block(inputs, 32, (3, 3), strides=(2, 2))
-
-    x = inverted_residual_block(x, 16, (3, 3), t=1, strides=1, n=1)
-    x = inverted_residual_block(x, 24, (3, 3), t=6, strides=2, n=2)
-    x = inverted_residual_block(x, 32, (3, 3), t=6, strides=2, n=3)
-    x = inverted_residual_block(x, 64, (3, 3), t=6, strides=2, n=4)
-    x = inverted_residual_block(x, 96, (3, 3), t=6, strides=1, n=3)
-    x = inverted_residual_block(x, 160, (3, 3), t=6, strides=2, n=3)
-    x = inverted_residual_block(x, 320, (3, 3), t=6, strides=1, n=1)
-
-    x = _conv_block(x, 1280, (1, 1), strides=(1, 1))
-    x = GlobalAveragePooling2D()(x)
-    x = Reshape((1, 1, 1280))(x)
-    x = Dropout(0.3, name='Dropout')(x)
-    x = Conv2D(num_classes, (1, 1), padding='same')(x)
-
-    x = Activation('softmax', name='softmax')(x)
-    output = Reshape((num_classes,))(x)
-
-    model = Model(inputs, output)
-    plot_model(model, to_file='../../images/MobileNetv2.png', show_shapes=True)
-
-    return model
-
-
-
-
 
 if __name__ == "__main__":
     input_shape = (64, 64, 1)
@@ -652,7 +646,7 @@ if __name__ == "__main__":
     # model = Xception(input_shape, num_classes)
     # model.summary()
 
-    model = MobileNetv2(input_shape, num_classes)
+    model = MobileNet(input_shape, num_classes)
     model.summary()
 
     # model = MobileNet(input_shape, num_classes, include_top=True)
