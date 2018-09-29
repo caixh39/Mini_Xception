@@ -9,19 +9,28 @@ import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
-from keras.models import load_model
+# from keras.models import load_model
+from tensorflow.python.keras._impl.keras.utils.generic_utils import CustomObjectScope
+from tensorflow.python.keras._impl.keras.applications import mobilenet
+from tensorflow.python.keras._impl.keras.models import load_model
 from utils.datasets import DataManager
 from utils.preprocessor import preprocess_input
+from keras import backend as K
 
 # parameters
-batch_size = 16
+batch_size = 32
 input_shape = (64, 64, 1)
 verbose = 1
 num_classes = 7
-base_path = '../trained_models/test_models/'
-model_path = base_path + 'fer2013_0828_GAP_concate_XCEPTION.04-0.6637.hdf5'
+base_path = '../trained_models/emotion_models/'
+model_path = base_path + 'fer2013_MobileNet_0929.01-0.2948.hdf5'
 
-model = load_model(model_path)
+
+## test MobileNet, there have custom function layer
+with CustomObjectScope({'relu6': mobilenet.relu6,'DepthwiseConv2D': mobilenet.DepthwiseConv2D}):
+    model = load_model(model_path)
+
+# model = load_model(model_path)
 model.summary()
 
 
@@ -38,14 +47,4 @@ print('test loss:', test_loss)
 print('accuracy:', test_accuracy)
 
 
-# result:
-# computers: GeForce GT 730, i7-7700 CPU @3.60GHz × 8 
-# 1.author_github: ('test loss:', 0.954571045119306) + ('accuracy:', 0.6597938144495973) 65.98%, time=3.98~4.2ms/step
-#   fer2013_mini_XCEPTION.107-0.66.hdf5
-# 2. author_aug_disgust_training: ('test loss:', 0.9779383508266928) + ('accuracy:', 0.6692672053662871) 66.93%, time=4.27ms/step
-#   fer2013_mini_Xception_author_traindata_disgust.198-0.6559.hdf5
-# 3. InveptionV3 + Sep network
-#  'fer2013_0828_GAP_concate_XCEPTION.04-0.6637.hdf5' = ('test loss:', 1.0027647953024812)+('accuracy:', 0.6767901922707174) 67.68%, time=10ms/step
-# 
-# 
-# #  author + unsampling: ('test loss:', 0.9773935891353642) + ('accuracy:', 0.6609083310280314) 66.09%, time = 11ms/step
+
