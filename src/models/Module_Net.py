@@ -29,7 +29,7 @@ from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras.engine import InputSpec
 from keras.regularizers import l2
-# from keras.applications.mobilenet import relu6, DepthwiseConv2D
+
 
 l2_regularization = 0.01
 regularization = l2(l2_regularization)
@@ -285,7 +285,7 @@ class DepthwiseConv2D(Conv2D):
 
 
 # class relu6(Activation):
-    
+
 
 def relu6(x):
     return K.relu(x, max_value=6)
@@ -301,7 +301,7 @@ def _make_divisible(v, divisor=8, min_value=8):
         new_v += divisor
     return new_v
 
-def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1), bn_epsilon=1e-3,
+def _conv_block(inputs, filters, alpha=1, kernel=(3, 3), strides=(1, 1), bn_epsilon=1e-3,
                 bn_momentum=0.99, block_id=1):
     """Adds an initial convolution layer (with batch normalization and relu6).
     # Arguments
@@ -520,12 +520,62 @@ def _depthwise_conv_block_v2(inputs, pointwise_conv_filters, alpha, expansion_fa
     return x
 
 
+def _inverted_res_block(inputs, expansion, stride, alpha, filters, block_id):
+    in_channels = backend.int_shape(inputs)[-1]
+    pointwise_conv_filters = int(filters * alpha)
+    pointwise_filters = _make_divisible(pointwise_conv_filters, 8)
+    x = inputs
+    prefix = 'block_{}_'.format(block_id)
 
-#### ---------------- shuffleNet model ----------------- ####
+    if block_id:
+        # Expand
+        x = layers.Conv2D(expansion * in_channels,
+                          kernel_size=1,
+                          padding='same',
+                          use_bias=False,
+                          activation=None,
+                          name=prefix + 'expand')(x)
+        x = layers.BatchNormalization(epsilon=1e-3,
+                                      momentum=0.999,
+                                      name=prefix + 'expand_BN')(x)
+        x = layers.ReLU(6., name=prefix + 'expand_relu')(x)
+    else:
+        prefix = 'expanded_conv_'
+
+    # Depthwise
+    if stride == 2:
+        x = layers.ZeroPadding2D(padding=correct_pad(backend, x, 3),
+                                 name=prefix + 'pad')(x)
+    x = layers.DepthwiseConv2D(kernel_size=3,
+                               strides=stride,
+                               activation=None,
+                               use_bias=False,
+                               padding='same' if stride == 1 else 'valid',
+                               name=prefix + 'depthwise')(x)
+    x = layers.BatchNormalization(epsilon=1e-3,
+                                  momentum=0.999,
+                                  name=prefix + 'depthwise_BN')(x)
+
+    x = layers.ReLU(6., name=prefix + 'depthwise_relu')(x)
+
+    # Project
+    x = layers.Conv2D(pointwise_filters,
+                      kernel_size=1,
+                      padding='same',
+                      use_bias=False,
+                      activation=None,
+                      name=prefix + 'project')(x)
+    x = layers.BatchNormalization(
+        epsilon=1e-3, momentum=0.999, name=prefix + 'project_BN')(x)
+
+    if in_channels == pointwise_filters and stride == 1:
+        return layers.Add(name=prefix + 'add')([inputs, x])
+    return x
+
+
 def _bottleneck(inputs, filters, kernel, t, s, r=False):
     """Bottleneck
     This function defines a basic bottleneck structure.
-
     # Arguments
         inputs: Tensor, input tensor of conv layer.
         filters: Integer, the dimensionality of the output space.
@@ -537,7 +587,6 @@ def _bottleneck(inputs, filters, kernel, t, s, r=False):
             of the convolution along the width and height.Can be a single
             integer to specify the same value for all spatial dimensions.
         r: Boolean, Whether to use the residuals.
-
     # Returns
         Output tensor.
     """
@@ -549,20 +598,19 @@ def _bottleneck(inputs, filters, kernel, t, s, r=False):
 
     x = DepthwiseConv2D(kernel, strides=(s, s), depth_multiplier=1, padding='same')(x)
     x = BatchNormalization(axis=channel_axis)(x)
-    x = Activation('relu')(x)
+    x = Activation(relu6)(x)
 
     x = Conv2D(filters, (1, 1), strides=(1, 1), padding='same')(x)
     x = BatchNormalization(axis=channel_axis)(x)
 
     if r:
-        x = layers.add([x, inputs])
+        x = add([x, inputs])
     return x
 
 
-def inverted_residual_block(inputs, filters, kernel, t, strides, n):
+def _inverted_residual_block(inputs, filters, kernel, t, strides, n):
     """Inverted Residual Block
     This function defines a sequence of 1 or more identical layers.
-
     # Arguments
         inputs: Tensor, input tensor of conv layer.
         filters: Integer, the dimensionality of the output space.
@@ -586,7 +634,7 @@ def inverted_residual_block(inputs, filters, kernel, t, strides, n):
     return x
 
 
-
+#### ---------------- shuffleNet model ----------------- ####
 def inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
     """Adds a Inception-ResNet block.
 
