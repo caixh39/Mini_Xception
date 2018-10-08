@@ -1,0 +1,296 @@
+  os._exit(0)
+ ## ShuffleNet: 取两次均值, 973,135
+  -- 多GPU，GTX960 无法测试
+  -- fer2013_ShuffleNet_0929.134-0.6517.hdf5, 65.17%
+  -- fer2013_ShuffleNet_0929.141-0.6528.hdf5, 65.14%
+  -- fer2013_ShuffleNet_0929.145-0.6528.hdf5, 65.28%
+ 
+  -- 单GPU
+  -- fer2013_ShuffleNet_0930.158-0.6057.hdf5, 62.58%
+  -- fer2013_ShuffleNet_0930.160-0.6060.hdf5, 62.47%
+  -- fer2013_ShuffleNet_0930.174-0.6074.hdf5, 62.69%
+  
+  -- 取两次均值: 65.48%
+  -- fer2013_ ShuffleNet_train2_0930.137-0.6461.hdf5, 64.73%
+  -- fer2013_ ShuffleNet_train2_0930.138-0.6464.hdf5, 64.98%
+  -- fer2013_ ShuffleNet_train2_0930.163-0.6484.hdf5, 65.67%
+  -- fer2013_ ShuffleNet_train2_0930.170-0.6517.hdf5, 65.28%
+  -- fer2013_ ShuffleNet_train2_0930.176-0.6523.hdf5, 64.64%
+ 
+ ## XceptionNet: 取两次均值 68.47%, 20,875,247
+  -- 68.50%
+  -- fer2013_Xception_0929.44-0.6637.hdf5, 65.95%
+  -- fer2013_Xception_0929.68-0.6721.hdf5, 68.46%
+  -- fer2013_Xception_0929.92-0.6734.hdf5, 68.54%
+  
+  -- 68.47%
+  -- fer2013_Xception_0930.45-0.6659.hdf5, 68.43%， 后续出现过拟合现象
+  -- fer2013_Xception_0930.83-0.6679.hdf5, 67.90%
+  -- fer2013_Xception_0930.97-0.6682.hdf5, 68.12%
+  -- fer2013_Xception_0930.105-0.6701.hdf5, 68.51%
+  -- fer2013_Xception_0930.109-0.6726.hdf5, 68.43%
+  
+ ## MobileNet: 取两次均值 (64x64 + 96x96) 3,235,463　 (Total params: 4,253,288 分类数1000)
+  -- image_size=64x64: 0930pm
+  -- fer2013_MobileNet_0930.96-0.6534.hdf5, 66.70%
+  -- fer2013_MobileNet_0930.97-0.6631.hdf5, 67.76%
+  -- fer2013_MobileNet_0930.114-0.6668.hdf5, 67.46%
+  
+  -- image_size=96x96 overfitting (需再重新训练一次）　（未传输）
+   -- fer2013_MobileNet_96x96_1001.50-0.6707.hdf5 67.60%  (loss min)
+   -- fer2013_MobileNet_96x96_1001.77-0.6740.hdf5 68.99%
+   -- fer2013_MobileNet_96x96_1001.79-0.6757.hdf5 68.82%
+   -- fer2013_MobileNet_96x96_1001.81-0.6776.hdf5 69.13%
+   -- fer2013_MobileNet_96x96_1001.82-0.6818.hdf5 69.43% (overfitting)
+
+
+  
+ ###### MobileNet_V2: 2,284,615 (2,266,375)
+  -- image_size=64x64,均值 67.46%
+  -- fer2013_MobileNetv2_0930.159-0.6631.hdf5, 67.23%
+  -- fer2013_MobileNetv2_0930.160-0.6640.hdf5, 67.21%
+  -- fer2013_MobileNetv2_0930.161-0.6670.hdf5, 67.37%
+  -- fer2013_MobileNetv2_0930.170-0.6695.hdf5, 67.65% 
+  -- image_size=96x96 存在overfitting现象 69.20%
+   -- fer2013_MobileNetv2_96x96.104-0.6737.hdf5, 68.51% 
+   -- fer2013_MobileNetv2_96x96.105-0.6782.hdf5, 68.48% 
+   -- fer2013_MobileNetv2_96x96.109-0.6840.hdf5, 68.82%
+   -- fer2013_MobileNetv2_96x96.116-0.6849.hdf5, 68.49%
+   -- fer2013_MobileNetv2_96x96.133-0.6879.hdf5, 69.24%
+   -- fer2013_MobileNetv2_96x96.148-0.6896.hdf5, 69.16%
+  -- image_size = 128x128:
+   -- fer2013_ MobileNetV2_128x182_1003.97-0.6760.hdf5  67.53%
+   -- fer2013_ MobileNetV2_128x182_1003.124-0.6785.hdf5 69.21%
+   -- fer2013_ MobileNetV2_128x182_1003.130-0.6840.hdf5 69.43%
+   -- fer2013_ MobileNetV2_128x182_1003.136-0.6846.hdf5 69.85%
+   -- fer2013_ MobileNetV2_128x182_1003.159-0.6857.hdf5 69.63%
+   -- fer2013_ MobileNetV2_128x182_1003.185-0.6863.hdf5 70.21%
+   
+##### MobileNet_V2: depthwise(add instead of concat): 6,671,671  70.13%
+  -- fer2013_Concate_MobileNetv2_96x96_1001.78-0.6782.hdf5 69.96%
+  -- fer2013_Concate_MobileNetv2_96x96_1001.79-0.6790.hdf5 69.99%
+  -- fer2013_Concate_MobileNetv2_96x96_1001.80-0.6796.hdf5 69.78%
+  -- fer2013_Concate_MobileNetv2_96x96_1001.82-0.6851.hdf5 70.13%
+  
+##### MobileNet_v2_concat:　676,591　
+  -- fer2013_MobileNetv2_96x96_1002.83-0.6592.hdf5 66.62%
+  -- fer2013_MobileNetv2_96x96_1002.96-0.6595.hdf5 67.57% 
+  -- fer2013_MobileNetv2_96x96_1002.121-0.6615.hdf5 67.85% overfitting after 
+  -- fer2013_MobileNetv2_96x96_1002.147-0.6640.hdf5 68.77%
+  -- fer2013_MobileNetv2_96x96_1002.148-0.6665.hdf5 68.71%
+  -- fer2013_MobileNetv2_96x96_1002.151-0.6665.hdf5 68.74%
+  -- fer2013_MobileNetv2_96x96_1002.154-0.6668.hdf5 68.93%
+  
+### MobileNet_v2.1_concat: 315,311　　在跑２　没有ｃｏｎｃａｔ　而是顺直往下
+  
+ ## Concat_Moblie: 264,679 收敛时间慢
+  -- image_size=64x64  取两次均值       69.57%
+   -- fer2013_ Concate_Mobile_0930.121-0.6670.hdf5, 69.04%
+   -- fer2013_ Concate_Mobile_0930.122-0.6673.hdf5, 69.32%
+   -- fer2013_ Concate_Mobile_0930.127-0.6695.hdf5, 69.57%
+   -- fer2013_ Concate_Mobile_0930.142-0.6718.hdf5, 69.55%
+  
+  -- image_size=96x96　 264,679 取两次均值　69.22%
+   -- fer2013_Concate_Mobile_96x96_1001.116-0.6654.hdf5 66.51%
+   -- fer2013_Concate_Mobile_96x96_1001.121-0.6679.hdf5 67.23%
+   -- fer2013_Concate_Mobile_96x96_1001.147-0.6704.hdf5 69.13%
+   -- fer2013_Concate_Mobile_96x96_1001.148-0.6740.hdf5 69.30%
+   -- fer2013_Concate_Mobile_96x96_1001.149-0.6748.hdf5 68.85%
+   -- fer2013_Concate_Mobile_96x96_1001.150-0.6757.hdf5 69.04%
+   -- fer2013_Concate_Mobile_96x96_1001.157-0.6771.hdf5 68.90%
+  
+  
+  
+ 　　# Concat_Mobile: 221,607 (delete SE、GAP), image_size=96x96　对比原始网络　
+ 　　-- fer2013_Concate_Mobile_96x96_1001.88-0.6534.hdf5 67.87%
+ 　　-- fer2013_Concate_Mobile_96x96_1001.89-0.6556.hdf5 67.96%
+ 　　-- fer2013_Concate_Mobile_96x96_1001.100-0.6567.hdf5 67.96%
+ 　　-- fer2013_Concate_Mobile_96x96_1001.110-0.6578.hdf5 67.57%
+ 　　-- fer2013_Concate_Mobile_96x96_1001.118-0.6584.hdf5 67.54%
+ 　　-- fer2013_Concate_Mobile_96x96_1001.129-0.6592.hdf5 67.85%
+ 
+  # Concat_Mobile: 221,607 (delete SE、GAP), image_size=64x64　 68.21%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.103-0.6570.hdf5 66.87%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.121-0.6590.hdf5 66.76%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.141-0.6634.hdf5 66.20%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.146-0.6645.hdf5 67.51%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.147-0.6673.hdf5 66.56%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.173-0.6684.hdf5 68.01%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.180-0.6687.hdf5 67.62%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.182-0.6709.hdf5 68.15%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.206-0.6729.hdf5 68.21%
+    -- fer2013_Concate_Mobile_64x64_dsegap_1002.213-0.6762.hdf5 67.90%
+  
+　　 # Concat_Mobile: 232,935 (delete SE), image_size=64x64, 证明GAP有效　68.26%
+　　  -- fer2013_Concate_Mobile_64x64_dse_1002.83-0.6601.hdf5 67.93%
+　　  -- fer2013_Concate_Mobile_64x64_dse_1002.84-0.6606.hdf5 67.68%
+　　  -- fer2013_Concate_Mobile_64x64_dse_1002.86-0.6612.hdf5 68.26%
+　　  -- fer2013_Concate_Mobile_64x64_dse_1002.88-0.6654.hdf5 68.18%
+　　  -- fer2013_Concate_Mobile_64x64_dse_1002.91-0.6668.hdf5 67.65%
+ 
+ 
+ 　　# Concat_Mobile: 261,543 (delete　GAP), image_size=64x64，　证明SE有效 69.30%
+ 　　  -- fer2013_Concate_Mobile_64x64_dgap_1002.101-0.6668.hdf5  68.60%
+ 　　  -- fer2013_Concate_Mobile_64x64_dgap_1002.104-0.6682.hdf5  68.57%
+ 　　  -- fer2013_Concate_Mobile_64x64_dgap_1002.108-0.6698.hdf5  69.30%
+ 　　  -- fer2013_Concate_Mobile_64x64_dgap_1002.109-0.6698.hdf5  68.82%
+ 　　  -- fer2013_Concate_Mobile_64x64_dgap_1002.116-0.6707.hdf5  69.16%
+ 　　  -- fer2013_Concate_Mobile_64x64_dgap_1002.117-0.6723.hdf5  68.96%
+ 　　
+ 　　
+ 　　# Concat_Mobile: 263,335 (concat model3+model4), image_size=64x64， 68.46%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.81-0.6707.hdf5  67.93%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.103-0.6712.hdf5 68.15%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.116-0.6718.hdf5 68.38%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.117-0.6723.hdf5 68.12%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.120-0.6743.hdf5 68.20%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.130-0.6743.hdf5　67.95%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.137-0.6748.hdf5 68.04%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.168-0.6751.hdf5 68.31%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.171-0.6754.hdf5 68.46%
+ 　　  -- fer2013_Concate_Mobile_64x64_concat34_1002.172-0.6768.hdf5 68.32%
+ 　　
+ 　　
+ 　　# Concat_Mobile: 将concat 替换为　add　对比效果 122,599 drop=0.2
+ 　　  -- fer2013_ Concate_Mobile_add_1003.171-0.6548.hdf5 67.12%
+ 　　  -- fer2013_ Concate_Mobile_add_1003.173-0.6553.hdf5 66.70%
+ 　　  -- fer2013_ Concate_Mobile_add_1003.193-0.6556.hdf5 67.40%
+ 　　  -- fer2013_ Concate_Mobile_add_1003.205-0.6562.hdf5 67.23%
+ 　　  -- drop=0.4:
+ 　　  -- fer2013_ Concate_Mobile_add_d4_1003.119-0.6467.hdf5 65.98%
+ 　　  -- fer2013_ Concate_Mobile_add_d4_1003.120-0.6473.hdf5 66.20%
+ 　　  -- fer2013_ Concate_Mobile_add_d4_1003.121-0.6503.hdf5 66.06%
+ 　　  
+ 　　## Concat_Mobile: 多个ＳＥ模块 271,815
+ 　　  -- fer2013_ Concate_Mobile_mulse_1003.156-0.6723.hdf5 66.98%
+ 　　  -- fer2013_ Concate_Mobile_mulse_1003.142-0.6693.hdf5 67.01%
+ 　　  -- fer2013_ Concate_Mobile_mulse_1003.141-0.6656.hdf5 66.43%
+ 　　  
+ 　　## retrain:
+ 　　  -- fer2013_Concate_Mobile_train2_1004.78-0.6629.hdf5 66.20%
+ 　　  -- fer2013_Concate_Mobile_train2_1004.104-0.6665.hdf5 67.37%
+ 　　  -- fer2013_Concate_Mobile_train2_1004.105-0.6684.hdf5 68.26%
+ 　　  -- fer2013_Concate_Mobile_train2_1004.107-0.6707.hdf5 68.37%
+ 　　  -- fer2013_Concate_Mobile_train2_1004.108-0.6721.hdf5 68.10%
+ 　　  -- fer2013_Concate_Mobile_train2_1004.109-0.6746.hdf5 67.85%
+ 　　
+ 　　
+## Concat_Xception: 
+  # Inception A: 528,376
+   -- image_size=96x96
+   -- fer2013_InceptionV4_XCEPTION_96x96_1001.89-0.6620.hdf5  68.10%
+   -- fer2013_InceptionV4_XCEPTION_96x96_1001.91-0.6665.hdf5  68.35%
+   -- fer2013_InceptionV4_XCEPTION_96x96_1001.101-0.6690.hdf5 68.04
+   -- fer2013_InceptionV4_XCEPTION_96x96_1001.132-0.6693.hdf5 68.04
+   
+  # Inception ABC: 499,992 image_size=96x96
+   -- fer2013_InceptionV4_ABC_XCEPTION_96x96_1002.135-0.6695.hdf5 67.34%
+   -- fer2013_InceptionV4_ABC_XCEPTION_96x96_1002.163-0.6718.hdf5 68.51%
+   -- fer2013_InceptionV4_ABC_XCEPTION_96x96_1002.169-0.6723.hdf5 68.85%
+   -- fer2013_InceptionV4_ABC_XCEPTION_96x96_1002.171-0.6740.hdf5 69.02%
+   
+ # retrain: 290,399
+   -- fer2013_Concate_V4_XCEPTION_train2_1004.132-0.6877.hdf5 68.85% 
+   -- fer2013_Concate_V4_XCEPTION_train2_1004.129-0.6857.hdf5 68.96%
+   -- fer2013_Concate_V4_XCEPTION_train2_1004.128-0.6851.hdf5 69.24%
+   -- fer2013_Concate_V4_XCEPTION_train2_1004.127-0.6840.hdf5 69.35%
+   -- fer2013_Concate_V4_XCEPTION_train2_1004.125-0.6810.hdf5 68.63%
+   -- fer2013_Concate_V4_XCEPTION_train2_1004.99-0.6740.hdf5 67.60%
+   -- fer2013_Concate_V4_XCEPTION_train2_1004.85-0.6682.hdf5 68.26%
+  
+  
+  
+  
+  
+
+
+## MobileNet_V2: (keras) 2,266,375 
+  # -- image size = 64x64 (GPU=1)
+   -- fer2013_MobileNetV2_keras_1003.110-0.6620.hdf5 67.51%
+   -- fer2013_MobileNetV2_keras_1003.111-0.6643.hdf5 67.79%
+   -- fer2013_MobileNetV2_keras_1003.115-0.6665.hdf5 67.90%
+   -- fer2013_MobileNetV2_keras_1003.123-0.6746.hdf5 68.24%
+  
+  
+  # -- image size = 96x96 (GPU=2)
+   -- fer2013_MobileNetV2_keras_96x96_1003.93-0.6779.hdf5 68.71%
+   -- fer2013_MobileNetV2_keras_96x96_1003.95-0.6799.hdf5 69.57%
+   -- fer2013_MobileNetV2_keras_96x96_1003.97-0.6835.hdf5 69.26%
+   
+   
+   
+## MobileNet_Xception:
+  -- drop=0.5
+   -- fer2013_MobileNet_xception_drop5_1003.182-0.6406.hdf5 64.61%
+   -- fer2013_MobileNet_xception_drop5_1003.208-0.6531.hdf5 65.50%
+   
+   
+## mini_concate_V4_XCEPTION: 290,399 参数多了１０万　
+   -- 7fer2013_mini_concate_V4_XCEPTION_1007.116-0.6721.hdf5 68.26%    loss is min
+   -- fer2013_mini_concate_V4_XCEPTION_1007.143-0.6746.hdf5 69.54%
+   -- fer2013_mini_concate_V4_XCEPTION_1007.144-0.6790.hdf5 69.99%
+   -- fer2013_mini_concate_V4_XCEPTION_1007.145-0.6801.hdf5 69.88%
+   -- fer2013_mini_concate_V4_XCEPTION_1007.152-0.6807.hdf5 70.13%
+   
+## mini_concate_V3_XCEPTION: 183,135 
+   -- fer2013_mini_concate_V3_XCEPTION_1007.117-0.6785.hdf5
+   -- fer2013_mini_concate_V3_XCEPTION_1007.120-0.6793.hdf5  67.14%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.123-0.6812.hdf5  67.73%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.136-0.6818.hdf5  67.65%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.137-0.6829.hdf5  68.18%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.141-0.6840.hdf5  68.20%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.162-0.6860.hdf5  68.20%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.200-0.6863.hdf5  68.18%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.201-0.6865.hdf5  68.15%
+   -- fer2013_mini_concate_V3_XCEPTION_1007.206-0.6868.hdf5  68.26%
+
+## mini_concate_V4_1_XCEPTION: 290,719
+   -- fer2013_mini_concate_V4_1_XCEPTION_1007.167-0.6773.hdf5 68.87%
+   -- fer2013_mini_concate_V4_1_XCEPTION_1007.168-0.6782.hdf5 69.66%
+   -- fer2013_mini_concate_V4_1_XCEPTION_1007.173-0.6787.hdf5 69.21%
+   -- fer2013_mini_concate_V4_1_XCEPTION_1007.174-0.6832.hdf5 69.13%
+   -- fer2013_mini_concate_V4_1_XCEPTION_1007.186-0.6840.hdf5 69.35%
+   
+## mini_concate_V4_2_XCEPTION   296,383
+   -- fer2013_mini_concate_V4_2_XCEPTION_1007.123-0.6838.hdf5 69.82%
+   -- fer2013_mini_concate_V4_2_XCEPTION_1007.122-0.6821.hdf5 69.77%
+   -- fer2013_mini_concate_V4_2_XCEPTION_1007.121-0.6810.hdf5 69.10%
+   -- fer2013_mini_concate_V4_2_XCEPTION_1007.120-0.6787.hdf5 69.34%
+   
+## mini_concate_V4_3_XCEPTION: 5个分支 415,638
+  -- fer2013_mini_concate_V4_3_XCEPTION_1007.64-0.6732.hdf5 67.59% loss is min
+  -- fer2013_mini_concate_V4_3_XCEPTION_1007.73-0.6734.hdf5 67.48%
+  -- fer2013_mini_concate_V4_3_XCEPTION_1007.99-0.6865.hdf5 70.13%
+  -- fer2013_mini_concate_V4_3_XCEPTION_1007.101-0.6865.hdf5 69.54%
+  -- fer2013_mini_concate_V4_3_XCEPTION_1007.106-0.6885.hdf5 69.82%
+  -- fer2013_mini_concate_V4_3_XCEPTION_1007.119-0.6902.hdf5 69.66%
+  -- fer2013_mini_concate_V4_3_XCEPTION_1007.139-0.6904.hdf5　69.66%
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
