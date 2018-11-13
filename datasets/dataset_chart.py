@@ -286,58 +286,84 @@ def three_way_plot(xs,ys,ws,zs,network,category):
     plt.grid()
     plt.show() 
 
+
+def addtext(ax, props):
+    ax.text(0.5, 0.5, 'text 0', props, rotation=0)
+    ax.text(1.5, 0.5, 'text 45', props, rotation=0)
+    ax.text(2.5, 0.5, 'text 135', props, rotation=0)
+    ax.text(3.5, 0.5, 'text 225', props, rotation=0)
+    ax.text(4.5, 0.5, 'text -45', props, rotation=0)
+    for x in range(0, 5):
+        ax.scatter(x + 0.5, 0.5, color='r', alpha=0.5)
+    ax.set_yticks([0, .5, 1])
+    ax.set_xlim(0, 5)
+    ax.grid(True)
+
 # simple picking, lines, rectangles and text
 def two_scatter_bar(index, bar_value, scatter_value, x_label): 
     fig, (ax1, ax2) = plt.subplots(2, 1)
-    plt.grid()
     bar_width = 0.5
 
     # pick the rectangle
-    line= ax1.scatter(index[2:12], scatter_value[2:12], s=[2000, 1700, 600, 1200, 1200, 1700, 300, 140, 400, 400],
-    					c = ['#996699','#CC99CC','#9999CC',
-					'#FFFFCC', '#FFFF99', '#FFCC33',
-					'#FF9933','#CC9900','#FF9900', 'g']) 
+    # for x in range(0, index):
+    ax1.scatter(index[2:12], scatter_value[2:12], s=[2000, 1700, 600, 1200, 1200, 1700, 300, 140, 400, 400],
+				color = ['#996699','#CC99CC','#9999CC',
+				'#FFFFCC', '#FFFF99', '#FFCC33',
+				'#FF9933','#CC9900','#FF9900', 'g']) 
+    ax1.scatter(index[2:12], scatter_value[2:12], s=15, color = '#000000') 
 
-    ax1.annotate("290,719",xy=('8', 1500000), xytext=('7.5', 4000000), fontsize=17,
-					arrowprops=dict(facecolor='red', width=5))
+    ax1.annotate("20,875,247", xy=('2.5', 22000000), xytext=('2.5', 22000000), fontsize=11)
+    ax1.annotate("3,235,247", xy=('2.9', 7000000), xytext=('2.7', 7000000), fontsize=11)
+    ax1.annotate("973,135", xy=('4', 1000000), xytext=('3.5', 4000000), fontsize=11)
+    ax1.annotate("2,284,615", xy=('5', 5000000), xytext=('4.4', 10000000), fontsize=11)
+    ax1.annotate("2,284,615", xy=('6', 5000000), xytext=('5.3', 6000000), fontsize=11)
+    ax1.annotate("6,671,671", xy=('7', 9000000), xytext=('6.6', 11000000), fontsize=11)
+    ax1.annotate("264,679", xy=('8', 1000000), xytext=('7.2', 1900000), fontsize=11)
+
+    ax1.annotate("58,423", xy=('7.5', 1000000), xytext=('8.5', 1900000), fontsize=11,
+    			color = 'blue')
+    ax1.annotate("290,719", xy=('10', 1000000), xytext=('9.4', 1900000), fontsize=11)
+    ax1.annotate("290,719", xy=('11.2', 1000000), xytext=('10.7', 1900000), fontsize=11)
+
 
     bars = ax2.bar(index, bar_value, bar_width, 
 		color= ['#660033','#993366','#996699','#CC99CC','#9999CC',
 				'#FFFFCC', '#FFFF99', '#FFCC33',
 				'#FF9933','#CC9900','#FF9900', 'g'])
 
-
-    ax2.set_ylabel('accuracy', picker=True)
     ax1.set_ylabel("Network's parameters", picker=True, fontsize=13)
-    ax1.set_xlabel('Neutral Network', fontsize=20)
-
-    ax2.set_xticks(index+bar_width)
-    ax2.set_xticklabels(network,rotation=25, fontsize=10)
+    ax2.set_xlabel('Neutral Network', fontsize=20)
+    ax2.set_ylabel('accuracy', picker=True, fontsize=13)
 
     ax1.set_xticks(index[2:12])
-    ax1.set_xticklabels(network[2:12],rotation=35, fontsize=7)
+    ax1.set_xticklabels(network[2:12],rotation=35, fontsize=11)
 
-    # ax2.set_ylim(0, max(bar_value)+20 ) 
+    ax2.set_xticks(index)
+    ax2.set_xticklabels(network,rotation=25, fontsize=10)
+   
+    ax1.set_yticks([1000000,4000000,8000000,1000000,12000000,14000000,16000000,
+				18000000,20000000,22000000,26000000])
     ax2.set_yticks([10,20,30,40,50,60,70,75,85,95])
-    ax1.set_yticks([2000000,4000000,6000000,8000000,1000000,12000000,14000000,16000000,
-				18000000,20000000,22000000,24000000,26000000])
 
-    def onpick1(event):
-        if isinstance(event.artist, Line2D):
-            thisline = event.artist
-            xdata = thisline.get_xdata()
-            ydata = thisline.get_ydata()
-            ind = event.ind
-            print('onpick1 line:', zip(np.take(xdata, ind), np.take(ydata, ind)))
-        elif isinstance(event.artist, Rectangle):
-            patch = event.artist
-            print('onpick1 patch:', patch.get_path())
-        elif isinstance(event.artist, Text):
-            text = event.artist
-            print('onpick1 text:', text.get_text())
 
-    fig.canvas.mpl_connect('pick_event', onpick1)
+    ax1.grid(True)
+    ax2.grid(True)
     plt.show()
+
+
+def addtext(ax, props):
+    ax.text(0.5, 0.5, 'text 0', props, rotation=0)
+    ax.text(1.5, 0.5, 'text 45', props, rotation=45)
+    ax.text(2.5, 0.5, 'text 135', props, rotation=135)
+    ax.text(3.5, 0.5, 'text 225', props, rotation=225)
+    ax.text(4.5, 0.5, 'text -45', props, rotation=-45)
+    for x in range(0, 5):
+        ax.scatter(x + 0.5, 0.5, color='r', alpha=0.5)
+    ax.set_yticks([0, .5, 1])
+    ax.set_xlim(0, 5)
+    ax.grid(True)
+
+
 
 if __name__ == '__main__':
 
@@ -362,6 +388,10 @@ if __name__ == '__main__':
 	parameters = [0, 0, 20875248, 3235463, 973135, 2284615, 2284615, 
 				6671671, 264679, 58423, 290719, 290719]
 	memory = [0, 0, 250.70, 39.00, 12.40, 27.90, 27.90, 80.30, 3.90, 0.898, 3.90, 3.90]
+
+	color= ['#660033','#993366','#996699','#CC99CC','#9999CC',
+		'#FFFFCC', '#FFFF99', '#FFCC33',
+		'#FF9933','#CC9900','#FF9900', 'g']
 
 	# getting datasets number
 	emotions_fer = dataset_number('fer2013')
