@@ -1,10 +1,14 @@
-network,accuracy,kappa,parameter,Time,model
-Flow_Xception,64.47,0.5702,65567,4ms,fer2013_version5_flow_XCEPTION.144-0.6317.hdf5
-Concat_Xception(no SE),68.96,0.6251,246719,4ms,fer2013_version2_mini_concate_V4_XCEPTION_noSE.127-0.6799.hdf5
-Concat_Xception(multi SE),67.15,0.6039,298783,8ms,fer2013_version2_mini_concate_V4_XCEPTION_mulse.126-0.6645.hdf5
-"Concat_Xception(4,no GAP)",68.21,0.6158,287839,6ms,fer2013_version2_mini_concate_V4_XCEPTION_nogap.120-0.6838.hdf5
-Concat_Xception(1+4),,,,,
-Concat_Xception(2+4),69.07,0.6256,288735,6ms,fer2013_version2_mini_concate_V4_XCEPTION_concat2+4_.79-0.6718.hdf5
-Concat_Xception(3+4),67.57,0.6078,289631,6ms,fer2013_version2_mini_concate_V4_XCEPTION_concat3+4_.116-0.6712.hdf5
-Concat_Xception(2+3+4),70.13,0.6388,290399,6ms,fer2013_mini_concate_V4_XCEPTION_1007.152-0.6807.hdf5
-Concat_Xception(1+2+3+4),68.9,0.6245,291087,6ms,fer2013_version5_mini_concate_V4_XCEPTION_1-4.166-0.6815.hdf5
+network,accuracy,kappa,parameter,memory(MB),Time,model
+Flow_Xception,64.47,0.5702,65567,1,4ms,fer2013_version5_flow_XCEPTION.144-0.6317.hdf5
+Concat_Xception(no SE),68.96,0.6251,246719,3.3,4ms,fer2013_version2_mini_concate_V4_XCEPTION_noSE.127-0.6799.hdf5
+Concat_Xception(stride=2),66.45,0.5947,290572,3.9,6ms,fer2013_version6_mini_concate_V4_XCEPTION_strides_2.109-0.6500.hdf5
+Concat_Xception(multi SE),67.15,0.6039,298783,4.2,8ms,fer2013_version2_mini_concate_V4_XCEPTION_mulse.126-0.6645.hdf5
+"Concat_Xception(4,no GAP)",68.21,0.6158,287839,3.9,6ms,fer2013_version2_mini_concate_V4_XCEPTION_nogap.120-0.6838.hdf5
+Concat_Xception(1+4),68.12,0.6151,288399,3.9,6ms,fer2013_version6_mini_concate_V4_XCEPTION_model1_4.101-0.6704.hdf5
+Concat_Xception(2+4),69.07,0.6256,288735,3.9,6ms,fer2013_version2_mini_concate_V4_XCEPTION_concat2+4_.79-0.6718.hdf5
+Concat_Xception(3+4),67.57,0.6078,289631,3.9,6ms,fer2013_version2_mini_concate_V4_XCEPTION_concat3+4_.116-0.6712.hdf5
+Concat_Xception(2+3+4),70.13,0.6388,290572,3.9,6ms,fer2013_mini_concate_V4_XCEPTION_1007.152-0.6807.hdf5
+Concat_Xception(1+2+3+4),68.9,0.6245,291087,3.9,6ms,fer2013_version5_mini_concate_V4_XCEPTION_1-4.166-0.6815.hdf5
+,,,,,,
+,,,,,,
+,,,,,,Ps: 290399 (model:2+3+4)

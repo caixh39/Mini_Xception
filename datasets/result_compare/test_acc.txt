@@ -416,6 +416,12 @@
    fer2013_version2_mini_concate_V4_XCEPTION_concat3+4_.76-0.6707.hdf5  65.56%
    fer2013_version2_mini_concate_V4_XCEPTION_concat3+4_.116-0.6712.hdf5 67.57%
   
+   8.1 concat model: 1+4, 288,399
+      fer2013_version6_mini_concate_V4_XCEPTION_model1_4.101-0.6704.hdf5 68.12%
+      fer2013_version6_mini_concate_V4_XCEPTION_model1_4.102-0.6726.hdf5 67.79%
+      fer2013_version6_mini_concate_V4_XCEPTION_model1_4.104-0.6757.hdf5 68.12%
+      fer2013_version6_mini_concate_V4_XCEPTION_model1_4.117-0.6765.hdf5 67.40%
+      fer2013_version6_mini_concate_V4_XCEPTION_model1_4.125-0.6793.hdf5 67.12%
   
   
   9. concat model2+model4: 288,735
@@ -433,6 +439,16 @@
    fer2013_version5_mini_concate_V4_XCEPTION_1-4.141-0.6787.hdf5 68.79%
    fer2013_version5_mini_concate_V4_XCEPTION_1-4.150-0.6807.hdf5 68.87%
    fer2013_version5_mini_concate_V4_XCEPTION_1-4.166-0.6815.hdf5 68.90%
+   
+  11. concat model: fer2013 data disgust　未增强 290,572
+   fer2013_version6_mini_concate_V4_XCEPTION_train_data_raw.130-0.6760.hdf5 68.40%
+   fer2013_version6_mini_concate_V4_XCEPTION_train_data_raw.133-0.6787.hdf5 68.40%
+   fer2013_version6_mini_concate_V4_XCEPTION_train_data_raw.135-0.6796.hdf5 68.96%
+   fer2013_version6_mini_concate_V4_XCEPTION_train_data_raw.143-0.6796.hdf5 69.38%
+   
+  12. concat model:　感受野　stride=2, input stage
+   fer2013_version6_mini_concate_V4_XCEPTION_strides_2.93-0.6447.hdf5  66.20%
+   fer2013_version6_mini_concate_V4_XCEPTION_strides_2.109-0.6500.hdf5 66.45%
    
   11. flow_xception: 65,576
    fer2013_version5_flow_XCEPTION.138-0.6291.hdf5 64.22%
