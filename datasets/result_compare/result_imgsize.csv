@@ -1,0 +1,6 @@
+network,accuracy,kappa,Time,model
+Concat_Xception(48),67.6,0.6087,6ms,fer2013_version2_mini_concate_V4_XCEPTION_48.111-0.6721.hdf5
+Concat_Xception(64),70.13,0.6388,6ms,fer2013_mini_concate_V4_XCEPTION_1007.152-0.6807.hdf5
+Concat_Xception(96),70.27,0.6409,6ms,fer2013_version2_mini_concate_V4_XCEPTION_96.108-0.6796.hdf5
+Concat_Xception(128),68.63,0.6213,6ms,fer2013_version2_mini_concate_V4_XCEPTION_128.64-0.6796.hdf5
+"Concat_Xception(64, no aug)",,,,
