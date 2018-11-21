@@ -17,17 +17,6 @@ plt.rcParams['font.sans-serif']=['SimHei']
 plt.rcParams['axes.unicode_minus']=False
 
 
-# the best result matrix:70.13%
-matrix = [[311, 39, 11, 73, 5, 48],
- 		   [ 12, 38, 1, 1, 1, 1, 1],
-  		   [ 74, 2, 264, 18, 91, 39, 40],
-  		   [ 23, 0, 11, 785, 24, 9, 27],
-  		   [ 60, 1, 56, 29, 346, 6, 96],
-  		   [ 10, 1, 33, 20, 7, 336, 9],
-  		   [ 31, 2, 34, 30, 87, 5, 437]]
-
-
-
 def dataset_number(dataset):
 	emotions = np.zeros(7)
 	datasets_path = dataset + '/'
@@ -240,7 +229,7 @@ def make_patch_spines_invisible(ax):
     	sp.set_visible(False) 
 
 
-def three_way_plot(xs,ys,ws,zs,network,category): 
+def three_way_plot(index,time, memory, parameters, network, category): 
     fig, host = plt.subplots() 
     fig.subplots_adjust(right=0.6) 
     par1 = host.twinx() 
@@ -248,25 +237,25 @@ def three_way_plot(xs,ys,ws,zs,network,category):
 
     par2.spines["right"].set_position(("axes", 1.1)) 
 
-    p1, = host.plot(xs, ys, "b", marker='s', linewidth=1.2, markersize=5, label="Time") 
-    p2, = par1.plot(xs, ws, "r", marker='^', linewidth=1.4, linestyle='dashed',markersize=6, label="Parameters") 
-    p3, = par2.plot(xs, zs, "g", marker='+', linewidth=1.4, linestyle='dashed',markersize=6,  label="Memory") 
+    p1, = host.plot(index, time, "b", marker='s', linewidth=1.2, markersize=5, label="Time") 
+    p2, = par1.plot(index, memory, "r", marker='^', linewidth=1.4, linestyle='dashed',markersize=6, label="Memory") 
+    p3, = par2.plot(index, parameters, "g", marker='+', linewidth=1.4, linestyle='dashed',markersize=6,  label="Parameters") 
 
-    # p2, = host.scatter(xs, ws, s=[2000, 1700, 600, 1200, 1200, 1700, 300, 140, 400, 400], 
-				# 			c = ['#660033','#993366','#996699','#CC99CC','#9999CC',
-				# 			'#FFFFCC', '#FFFF99','#FF9933','#CC9900','#FF9900'], label="Parameters")
-    # host.annotate("8",xy=('8', 33), xytext=('7.5', 4000000), fontsize=17,
-				#  	arrowprops=dict(facecolor='red', width=5))
+    par1.annotate("0.898MB", xy=('8', 8), xytext=('8', 8), fontsize=11, color = 'red')
+    par1.annotate("1.3MB", xy=('9', 8), xytext=('9', 8), fontsize=11, color = 'red')
+    par1.annotate("3.9MB", xy=('10', 8), xytext=('10', 8), fontsize=11, color = 'red')
+    par1.annotate("3.9MB", xy=('11', 8), xytext=('11', 8), fontsize=11, color = 'red')
 
-    host.set_xlim(0, max(xs)+1) 
-    host.set_ylim(min(ys), max(ys) + 1200) 
-    par1.set_ylim(0, max(ws)+ 900000 ) 
-    par2.set_ylim(0, max(zs) + 70) 
+    host.set_xlim(0, max(index)+1) 
+    # host.set_ylim(min(time), max(time) + 2) 
+    host.set_yticks([2,4,6,8,10,12,14])
+    par1.set_ylim(0, max(memory)+ 15 ) 
+    par2.set_ylim(0, max(parameters) + 8500000) 
 
     host.set_xlabel("Neutral Network", fontsize=14) 
-    host.set_ylabel("Forward time per image [x10 us]", fontsize=14) 
-    par1.set_ylabel("Parameters", fontsize=14) 
-    par2.set_ylabel("Memory [MB]", fontsize=14) 
+    host.set_ylabel("Forward time per image [ms]", fontsize=14) 
+    par1.set_ylabel("Memory [MB]", fontsize=14) 
+    par2.set_ylabel("Parameters", fontsize=14) 
 
     host.yaxis.label.set_color(p1.get_color()) 
     par1.yaxis.label.set_color(p2.get_color()) 
@@ -283,7 +272,7 @@ def three_way_plot(xs,ys,ws,zs,network,category):
 
     host.legend(lines, [l.get_label() for l in lines]) 
     plt.tight_layout() 
-    plt.grid()
+    plt.grid(ls='--')
     plt.show() 
 
 
@@ -300,51 +289,75 @@ def addtext(ax, props):
     ax.grid(True)
 
 # simple picking, lines, rectangles and text
-def two_scatter_bar(index, bar_value, scatter_value, x_label): 
+def two_scatter_bar(index, accuracy, kappa, colors, scatter, network): 
     fig, (ax1, ax2) = plt.subplots(2, 1)
     bar_width = 0.5
 
     # pick the rectangle
     # for x in range(0, index):
-    ax1.scatter(index[2:12], scatter_value[2:12], s=[2000, 1700, 600, 1200, 1200, 1700, 300, 140, 400, 400],
-				color = ['#996699','#CC99CC','#9999CC',
-				'#FFFFCC', '#FFFF99', '#FFCC33',
-				'#FF9933','#CC9900','#FF9900', 'g']) 
-    ax1.scatter(index[2:12], scatter_value[2:12], s=15, color = '#000000') 
+    ax1.scatter(index[2:13], kappa[2:13], s=scatter[2:13],
+				color = colors[2:13]) 
+    ax1.scatter(index[2:13], kappa[2:13], s=8, color = '#000000') 
 
-    ax1.annotate("20,875,247", xy=('2.5', 22000000), xytext=('2.5', 22000000), fontsize=11)
-    ax1.annotate("3,235,247", xy=('2.9', 7000000), xytext=('2.7', 7000000), fontsize=11)
-    ax1.annotate("973,135", xy=('4', 1000000), xytext=('3.5', 4000000), fontsize=11)
-    ax1.annotate("2,284,615", xy=('5', 5000000), xytext=('4.4', 10000000), fontsize=11)
-    ax1.annotate("2,284,615", xy=('6', 5000000), xytext=('5.3', 6000000), fontsize=11)
-    ax1.annotate("6,671,671", xy=('7', 9000000), xytext=('6.6', 11000000), fontsize=11)
-    ax1.annotate("264,679", xy=('8', 1000000), xytext=('7.2', 1900000), fontsize=11)
+    ax1.annotate("20,875,247", xy=('2', 0.66), xytext=('1.4', 0.81), fontsize=11, color = 'blue')
+    ax1.annotate("3,235,463", xy=('2.9', 0.65), xytext=('3.1', 0.7), fontsize=11)
+    ax1.annotate("973,135", xy=('4', 0.62), xytext=('3.6', 0.625), fontsize=11)
+    ax1.annotate("2,284,615", xy=('5', 0.65), xytext=('4.5', 0.685), fontsize=11)
+    ax1.annotate("4,025,483", xy=('7', 0.68), xytext=('6.4', 0.7), fontsize=11)
+    ax1.annotate("2,284,615", xy=('8', 0.63), xytext=('7.5', 0.755), fontsize=11)
+    ax1.annotate("6,671,671", xy=('6', 0.67), xytext=('5.6', 0.75), fontsize=11)
+    ax1.annotate("58,423", xy=('7.5', 0.62), xytext=('8.75', 0.615), fontsize=11,color = 'blue')
+    ax1.annotate("88,999", xy=('10', 0.64), xytext=('9.6', 0.63), fontsize=11)
+    ax1.annotate("290,399", xy=('11.2', 0.66), xytext=('10.6', 0.68), fontsize=11, color = 'blue')
+    ax1.annotate("264,679", xy=('11.2', 0.66), xytext=('11.7', 0.665), fontsize=11)
 
-    ax1.annotate("58,423", xy=('7.5', 1000000), xytext=('8.5', 1900000), fontsize=11,
-    			color = 'blue')
-    ax1.annotate("290,719", xy=('10', 1000000), xytext=('9.4', 1900000), fontsize=11)
-    ax1.annotate("290,719", xy=('11.2', 1000000), xytext=('10.7', 1900000), fontsize=11)
+    # [3000, 1700, 600, 1200, 1200, 1700, 300, 140, 400, 400, 400]
+    # ax1.annotate("20,875,247", xy=('2.5', 22000000), xytext=('2.5', 22000000), fontsize=11)
+    # ax1.annotate("3,235,247", xy=('2.9', 7000000), xytext=('2.7', 7000000), fontsize=11)
+    # ax1.annotate("973,135", xy=('4', 1000000), xytext=('3.5', 4000000), fontsize=11)
+    # ax1.annotate("2,284,615", xy=('5', 5000000), xytext=('4.4', 10000000), fontsize=11)
+    # ax1.annotate("2,284,615", xy=('6', 5000000), xytext=('5.3', 6000000), fontsize=11)
+    # ax1.annotate("6,671,671", xy=('7', 9000000), xytext=('6.6', 11000000), fontsize=11)
+    # ax1.annotate("264,679", xy=('8', 1000000), xytext=('7.2', 1900000), fontsize=11)
+
+    # ax1.annotate("58,423", xy=('7.5', 1000000), xytext=('8.5', 1900000), fontsize=11,
+    # 			color = 'blue')
+    # ax1.annotate("290,719", xy=('10', 1000000), xytext=('9.4', 1900000), fontsize=11)
+    # ax1.annotate("290,719", xy=('11.2', 1000000), xytext=('10.7', 1900000), fontsize=11)
 
 
-    bars = ax2.bar(index, bar_value, bar_width, 
-		color= ['#660033','#993366','#996699','#CC99CC','#9999CC',
-				'#FFFFCC', '#FFFF99', '#FFCC33',
-				'#FF9933','#CC9900','#FF9900', 'g'])
+    bars = ax2.bar(index, accuracy, bar_width, color=colors)
+    ax2.annotate("71.20", xy=('0', 0.66), xytext=('0', 72), fontsize=10)
+    ax2.annotate("75.42", xy=('0', 0.66), xytext=('1', 76), fontsize=10)
 
-    ax1.set_ylabel("Network's parameters", picker=True, fontsize=13)
+    ax2.annotate("68.51", xy=('0', 0.66), xytext=('2', 69), fontsize=10)
+    ax2.annotate("67.76", xy=('0', 0.66), xytext=('3', 68.3), fontsize=10)
+    ax2.annotate("65.67", xy=('0', 0.66), xytext=('4', 66), fontsize=10)
+
+    ax2.annotate("67.65", xy=('0', 0.66), xytext=('5', 68), fontsize=10)
+    ax2.annotate("67.18", xy=('0', 0.66), xytext=('6', 67.5), fontsize=10)
+    ax2.annotate("69.24", xy=('0', 0.66), xytext=('7', 70), fontsize=10)
+    ax2.annotate("70.13", xy=('0', 0.66), xytext=('8', 70.5), fontsize=10)
+
+    ax2.annotate("66.48", xy=('0', 0.66), xytext=('9', 67.3), fontsize=10)
+    ax2.annotate("66.82", xy=('0', 0.66), xytext=('10', 67.5), fontsize=10)
+    ax2.annotate("70.13", xy=('0', 0.66), xytext=('11', 71), fontsize=10)
+    ax2.annotate("69.57", xy=('0', 0.66), xytext=('12', 70.3), fontsize=10)
+
+    ax1.set_ylabel("Cohen Kappa", picker=True, fontsize=14)
     ax2.set_xlabel('Neutral Network', fontsize=20)
-    ax2.set_ylabel('accuracy', picker=True, fontsize=13)
+    ax2.set_ylabel('Accuracy', picker=True, fontsize=14)
 
-    ax1.set_xticks(index[2:12])
-    ax1.set_xticklabels(network[2:12],rotation=35, fontsize=11)
+    ax1.set_xticks(index[2:13])
+    ax1.set_xticklabels(network[2:13],rotation=35, fontsize=11)
 
     ax2.set_xticks(index)
     ax2.set_xticklabels(network,rotation=25, fontsize=10)
    
-    ax1.set_yticks([1000000,4000000,8000000,1000000,12000000,14000000,16000000,
-				18000000,20000000,22000000,26000000])
-    ax2.set_yticks([10,20,30,40,50,60,70,75,85,95])
+    # ax1.set_yticks([1000000,4000000,8000000,1000000,12000000,14000000,16000000,
+				# 18000000,20000000,22000000,26000000])
 
+    ax2.set_yticks([10,20,30,40,50,60,70,75,85,95])
 
     ax1.grid(True)
     ax2.grid(True)
@@ -367,35 +380,23 @@ def addtext(ax, props):
 
 if __name__ == '__main__':
 
-	dataset = ['Fer2013','JAFFE']
-	emotion ={0:'Angry',1:'Disgust',2:'Fear',3:'Happy',4:'Sad',5:'Surprise',6:'Neutral'}
+	dataset = ['fer2013','jaffe']
+	file_path = './model_result/'
+	csv_file = file_path + 'result_inter.csv'
+	emotions_result = pd.read_csv(csv_file)
 
-	# concat_Xception result: name, time, memory, accuracy
-	network = ['AlexNet', 'BOVW+VGG', 
-				'Xception', 'Mobile', 'Shuffle', 'MobileV2', 'MobileV2(96)','MobileV2(96,C)',
-				'Concat_Mobile', 'Mini_xception', 'Concat_Xception', 'Concat_Xception(96)']
-
-	network_our = [ 0, 'Xception', 'Mobile', 'Shuffle', 'Mobile_v2', 'Mobile_v2(96)','Mobile_v2(96,C)',
-				'Concat_Mobile', 'Mini_xception', 'Concat_Xception', 'Concat_Xception(96)']
-
-	accuracy = [71.20, 75.42, 68.61, 67.76, 65.67, 67.65, 69.24, 70.13, 69.57, 66.48, 70.13, 70.19]
-	# std=0.15
-	accuracy_std = [0, 0, 68.46, 67.61, 65.52, 67.50, 69.09, 69.98, 69.42, 66.33, 69.98, 70.04] 
-	F1_score = [0, 0, 68.53, 67.84, 65.60, 67.57, 69.11, 70.00, 69.41, 65.98, 70.04, 70.13]
-
-	# model's parameters
-	infer_time = [ 0, 0, 2000, 730, 597, 1000, 2000, 2000, 1000, 470, 832, 701]
-	parameters = [0, 0, 20875248, 3235463, 973135, 2284615, 2284615, 
-				6671671, 264679, 58423, 290719, 290719]
-	memory = [0, 0, 250.70, 39.00, 12.40, 27.90, 27.90, 80.30, 3.90, 0.898, 3.90, 3.90]
-
-	color= ['#660033','#993366','#996699','#CC99CC','#9999CC',
-		'#FFFFCC', '#FFFF99', '#FFCC33',
-		'#FF9933','#CC9900','#FF9900', 'g']
+	network = emotions_result.network1
+	accuracy = emotions_result.accuracy
+	kappa = emotions_result.kappa
+	memory = emotions_result.memory
+	parameters = emotions_result.parameters
+	time = emotions_result.time
+	colors = emotions_result.colors
+	scatter = emotions_result.scatter
 
 	# getting datasets number
-	emotions_fer = dataset_number('fer2013')
-	emotions_jaf = dataset_number('jaffe')
+	emotions_fer = dataset_number(dataset[0])
+	emotions_jaf = dataset_number(dataset[1])
 
 	index = np.arange(12)
 
@@ -410,6 +411,6 @@ if __name__ == '__main__':
 	# memory_infer_time(network, infer_time, parameters)
 
 
-	# three_way_plot(index, infer_time[1:12], parameters[1:12], memory[1:12], network_our, "category") 
+	three_way_plot(index, time[1:13], memory[1:13], parameters[1:13], network[1:13], "category") 
 
-	two_scatter_bar(index,accuracy, parameters, network)
+	# two_scatter_bar(index, accuracy, kappa, colors, scatter,network)
