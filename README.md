@@ -9,6 +9,8 @@ Facial Emotion Recognition
 #### using
 - $ python video_emotion_color_demo.py 
 
+![alt tag](images/angry/angry1_haar.png)
+
 #### Defict:
 - facial emotion recognition's accuracy is only 65.87% when reruning the model, via dataset is Train and Public datas of fer2013.
 
