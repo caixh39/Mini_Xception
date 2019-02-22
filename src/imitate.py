@@ -2,13 +2,15 @@ import re
 import os
 import sys
 import csv
+import matplotlib
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from numpy.random import beta
 from pandas import DataFrame, Series
-from chart_func import single_people_number
+from chart_func import single_people_number,get_single_emotion,get_single_probability
 
 # data: imitate 4 emotions, record neutral,happy, sad, angry, fear;
 hudi = [[30, 31, 18, 44], [81, 4, 18, 0], [0, 75, 38, 23], [2, 0, 48, 2], [0, 0, 0, 44]]
@@ -23,77 +25,91 @@ def plot_beta_hist(ax, a, b):
             bins=25, alpha=0.8, normed=True)
 
 
-def sigle_proability():
+# def sigle_proability():
+#     plt.style.use('bmh')
+
+#     fig, ax = plt.subplots()
+#     plot_beta_hist(ax, 10, 10)
+#     plot_beta_hist(ax, 4, 12)
+#     plot_beta_hist(ax, 50, 12)
+#     plot_beta_hist(ax, 6, 55)
+#     ax.set_title("'bmh' style sheet")
+
+#     plt.show()
+
+def sigle_proability(emotions_result):
     plt.style.use('bmh')
+    
+    for i in range(len(emotions_result.id)):
+        if emotions_result.Emotion[i] == 'happy':
+            # print emotions_result.Emotion[i]
+            happy_p.append(emotions_result.Emotion[i])
+            sad_p.append(0)
+            angry_p.append(0)
+            fear_p.append(0)
+            neutral_p.append(0)
 
-    fig, ax = plt.subplots()
-    plot_beta_hist(ax, 10, 10)
-    plot_beta_hist(ax, 4, 12)
-    plot_beta_hist(ax, 50, 12)
-    plot_beta_hist(ax, 6, 55)
-    ax.set_title("'bmh' style sheet")
+        elif emotions_result.Emotion[i] == 'sad':
+            # print emotions_result.Emotion[i]
+            happy_p.append(0)
+            sad_p.append(emotions_result.Emotion[i])
+            angry_p.append(0)
+            fear_p.append(0)
+            neutral_p.append(0)
 
+        elif emotions_result.Emotion[i] == 'angry' or emotions_result.Emotion[i] == 'disgust':
+            # print emotions_result.Emotion[i]
+            happy_p.append(0)
+            sad_p.append(0)
+            angry_p.append(emotions_result.Emotion[i])
+            fear_p.append(0)
+            neutral_p.append(0)
+
+        elif emotions_result.Emotion[i] == 'fear' or emotions_result.Emotion[i] == 'surprise':
+            # print emotions_result.Emotion[i]
+            happy_p.append(0)
+            sad_p.append(0)
+            angry_p.append(0)
+            fear_p.append(emotions_result.Emotion[i])
+            neutral_p.append(0)
+
+        else:
+            # print emotions_result.Emotion[i]
+            happy_p.append(0)
+            sad_p.append(0)
+            angry_p.append(0)
+            fear_p.append(0)
+            neutral_p.append(emotions_result.Emotion[i])
+
+    print happy_p, len(happy_p)
+
+    print len(happy_p), len(sad_p),len(angry_p),len(fear_p), len(neutral)
+    os._exit(0)
+    # fig, ax = plt.subplots()
+    # ax.hist(happy_p, bins=25, alpha=0.8, normed=True)
+    # ax.hist(sad_p, bins=25, alpha=0.8, normed=True)
+    # ax.hist(angry_p, bins=25, alpha=0.8, normed=True)
+    # ax.hist(fear_p, bins=25, alpha=0.8, normed=True)
+    # ax.hist(neutral_p, bins=25, alpha=0.8, normed=True)
+
+    # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y/%m/%d'))
+    # plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+
+
+    # sub_axix = filter(lambda x:x%200 == 0, len(emotions_result.id))
+    plt.title('Result Analysis')
+    plt.plot(emotions_result.id, happy_p, color='green', label='training accuracy')
+    plt.plot(emotions_result.id, sad_p, color='red', label='testing accuracy')
+    plt.plot(emotions_result.id, angry_p,  color='skyblue', label='PN distance')
+    plt.plot(emotions_result.id, fear_p, color='blue', label='threshold')
+    plt.plot(emotions_result.id, neutral_p, color='blue', label='threshold')
+    plt.legend() 
+     
+    plt.xlabel('iteration times')
+    plt.ylabel('rate')
+
+    ax.set_title("each emotion probability values")
     plt.show()
-
-
-def get_single_emotion(Emotion_file):
-
-    happy = []
-    sad = []
-    angry = []
-    fear = []
-    neutral = []
-    emotions_result = Emotion_file
-
-    for i in range(len(emotions_result.Emotion)):
-        if emotions_result.Emotion[i] == 'happy':
-            # print emotions_result.Emotion[i]
-            happy.append(emotions_result.Emotion[i])
-        elif emotions_result.Emotion[i] == 'sad':
-            # print emotions_result.Emotion[i]
-            sad.append(emotions_result.Emotion[i])
-        elif emotions_result.Emotion[i] == 'angry':
-            # print emotions_result.Emotion[i]
-            angry.append(emotions_result.Emotion[i])
-        elif emotions_result.Emotion[i] == 'fear':
-            # print emotions_result.Emotion[i]
-            fear.append(emotions_result.Emotion[i])
-        else:
-            # print emotions_result.Emotion[i]
-            neutral.append(emotions_result.Emotion[i])
-
-    return happy,sad,angry,fear,neutral
-
-
-def get_single_probability(Emotion_file):
-
-    happy_p = []
-    sad_p = []
-    angry_p = []
-    fear_p = []
-    neutral_p = []
-    emotions_result = Emotion_file
-
-    for i in range(len(emotions_result.Emotion)):
-        if emotions_result.Emotion[i] == 'happy':
-            # print emotions_result.Probability[i]
-            happy_p.append(emotions_result.Probability[i])
-        elif emotions_result.Emotion[i] == 'sad':
-            # print emotions_result.Probability[i]
-            sad_p.append(emotions_result.Probability[i])
-        elif emotions_result.Emotion[i] == 'angry':
-            # print emotions_result.Probability[i]
-            angry_p.append(emotions_result.Probability[i])
-        elif emotions_result.Emotion[i] == 'fear':
-            # print emotions_result.Probability[i]
-            fear_p.append(emotions_result.Probability[i])
-        else:
-            # print emotions_result.Probability[i]
-            neutral_p.append(emotions_result.Probability[i])
-
-    return happy_p,sad_p,angry_p,fear_p,neutral_p
-
-
 
 
 if __name__ == '__main__':
@@ -105,19 +121,32 @@ if __name__ == '__main__':
 
     (happy,sad,angry,fear,neutral) = get_single_emotion(emotions_result)
     (happy_p,sad_p,angry_p,fear_p,neutral_p) = get_single_probability(emotions_result)
-    print happy[0],happy_p[0]
+    # print happy[0],happy_p[0]
+    # print len(happy_p), len(sad_p), len(angry_p), len(fear_p), len(neutral_p)
+    sigle_proability(emotions_result)
 
+    os._exit(0)
 
-    for i in range(0, len(emotions_result.Time)):
+    for i in range(0, len(emotions_result.id)):
         row = emotions_result.iloc[i]['Time']
         # print row
-        a = int(row)
 
-        time = datetime.utcfromtimestamp(a)
-        time = time.strftime("%Y-%m-%d %H:%M:%S")
+        # time_text.append(time_text)
 
+        os._exit(0)
 
-            # os._exit(0)
+    # for i in range(0, len(emotions_result.Time)):
+    #     row = emotions_result.iloc[i]['Time']
+    #     # print row
+    #     a = int(row)
+
+    #     time_text = datetime.utcfromtimestamp(a)
+    #     time_text = time_text.strftime("%H:%M:%S")
+    #     print time_text
+    #     dates = matplotlib.dates.datestr2num(time_text)
+    #     print dates
+    #     # time_text.append(time_text)
+    #     os._exit(0)
 
 
 
