@@ -36,12 +36,76 @@ def sigle_proability():
     plt.show()
 
 
+def get_single_emotion(Emotion_file):
+
+    happy = []
+    sad = []
+    angry = []
+    fear = []
+    neutral = []
+    emotions_result = Emotion_file
+
+    for i in range(len(emotions_result.Emotion)):
+        if emotions_result.Emotion[i] == 'happy':
+            # print emotions_result.Emotion[i]
+            happy.append(emotions_result.Emotion[i])
+        elif emotions_result.Emotion[i] == 'sad':
+            # print emotions_result.Emotion[i]
+            sad.append(emotions_result.Emotion[i])
+        elif emotions_result.Emotion[i] == 'angry':
+            # print emotions_result.Emotion[i]
+            angry.append(emotions_result.Emotion[i])
+        elif emotions_result.Emotion[i] == 'fear':
+            # print emotions_result.Emotion[i]
+            fear.append(emotions_result.Emotion[i])
+        else:
+            # print emotions_result.Emotion[i]
+            neutral.append(emotions_result.Emotion[i])
+
+    return happy,sad,angry,fear,neutral
+
+
+def get_single_probability(Emotion_file):
+
+    happy_p = []
+    sad_p = []
+    angry_p = []
+    fear_p = []
+    neutral_p = []
+    emotions_result = Emotion_file
+
+    for i in range(len(emotions_result.Emotion)):
+        if emotions_result.Emotion[i] == 'happy':
+            # print emotions_result.Probability[i]
+            happy_p.append(emotions_result.Probability[i])
+        elif emotions_result.Emotion[i] == 'sad':
+            # print emotions_result.Probability[i]
+            sad_p.append(emotions_result.Probability[i])
+        elif emotions_result.Emotion[i] == 'angry':
+            # print emotions_result.Probability[i]
+            angry_p.append(emotions_result.Probability[i])
+        elif emotions_result.Emotion[i] == 'fear':
+            # print emotions_result.Probability[i]
+            fear_p.append(emotions_result.Probability[i])
+        else:
+            # print emotions_result.Probability[i]
+            neutral_p.append(emotions_result.Probability[i])
+
+    return happy_p,sad_p,angry_p,fear_p,neutral_p
+
+
+
+
 if __name__ == '__main__':
     # single one person's info
     # single_people_number(user=hudi, n_groups=4)
     file_path = './'
     csv_file = file_path + 'hudi_1.csv'
     emotions_result = pd.read_csv(csv_file)
+
+    (happy,sad,angry,fear,neutral) = get_single_emotion(emotions_result)
+    (happy_p,sad_p,angry_p,fear_p,neutral_p) = get_single_probability(emotions_result)
+    print happy[0],happy_p[0]
 
 
     for i in range(0, len(emotions_result.Time)):
@@ -51,47 +115,6 @@ if __name__ == '__main__':
 
         time = datetime.utcfromtimestamp(a)
         time = time.strftime("%Y-%m-%d %H:%M:%S")
-
-
-    happy = []
-    sad = []
-    angry = []
-    fear = []
-    neutral = []
-
-    happy_p = []
-    sad_p = []
-    angry_p = []
-    fear_p = []
-    neutral_p = []
-
-        # print(time)
-    for i in range(len(emotions_result.Emotion)):
-        if emotions_result.Emotion[i] == 'happy':
-            print emotions_result.Emotion[i]
-            print emotions_result.Probability[i]
-            happy.append(emotions_result.Emotion[i])
-            happy_p.append(emotions_result.Probability[i])
-        elif emotions_result.Emotion[i] == 'sad':
-            print emotions_result.Emotion[i]
-            print emotions_result.Probability[i]
-            sad.append(emotions_result.Emotion[i])
-            sad_p.append(emotions_result.Probability[i])
-        elif emotions_result.Emotion[i] == 'angry':
-            print emotions_result.Emotion[i]
-            print emotions_result.Probability[i]
-            angry.append(emotions_result.Emotion[i])
-            angry_p.append(emotions_result.Probability[i])
-        elif emotions_result.Emotion[i] == 'fear':
-            print emotions_result.Emotion[i]
-            print emotions_result.Probability[i]
-            fear.append(emotions_result.Emotion[i])
-            fear_p.append(emotions_result.Probability[i])
-        else:
-            print emotions_result.Emotion[i]
-            print emotions_result.Probability[i]
-            neutral.append(emotions_result.Emotion[i])
-            neutral_p.append(emotions_result.Probability[i])
 
 
             # os._exit(0)
