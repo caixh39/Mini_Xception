@@ -149,6 +149,6 @@ def sigle_emotion_probability(emotions_result, label):
         if emotions_result.Emotion[i] == Emotion:
             emotion_p.append(emotions_result.Probability[i])
         else:
-            emotion_p.append(0)
+            emotion_p.append(None)
     # print emotion_p
     return emotion_p

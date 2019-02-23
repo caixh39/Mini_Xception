@@ -41,11 +41,18 @@ def plot_emotion_probability(emotions_result):
     print happy_p
 
     plt.title('Result Analysis')
-    plt.plot(happy_p, color='#FFFF00', label='happy accuracy')
-    plt.plot(sad_p, color='blue', label='sad accuracy')
-    plt.plot(angry_p,  color='red', label='angry accuracy')
-    plt.plot(fear_p, color='green', label='fear accuracy')
-    plt.plot(neutral_p, color='#999999', label='neutral accuracy')
+
+    plt.scatter(emotions_result.id, happy_p, color='#FFFF00', label='happy accuracy')
+    plt.scatter(emotions_result.id, sad_p, color='blue', label='sad accuracy')
+    plt.scatter(emotions_result.id, angry_p,  color='red', label='angry accuracy')
+    plt.scatter(emotions_result.id, fear_p, color='green', label='fear accuracy')
+    plt.scatter(emotions_result.id, neutral_p, color='#999999', label='neutral accuracy')
+
+    # plt.plot(sad_p, color='blue', label='sad accuracy')
+    # plt.plot(angry_p,  color='red', label='angry accuracy')
+    # plt.plot(fear_p, color='green', label='fear accuracy')
+    # plt.plot(neutral_p, color='#999999', label='neutral accuracy')
+
     plt.legend() 
      
     plt.xlabel('time')
