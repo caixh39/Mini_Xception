@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+# plot the number of one 
 def single_people_number(user, n_groups):
     neutral_number = user[0]
     std_neutral = ()
@@ -55,8 +55,8 @@ def single_people_number(user, n_groups):
                     error_kw=error_config,
                     label='Fear')
 
-    ax.set_xlabel('The process of imitating four expressions')
-    ax.set_ylabel('Number of expressions')
+    ax.set_xlabel('The Process of Imitating (Facial Recognition)')
+    ax.set_ylabel('The Result of FER (Number)')
     # ax.set_title('Scores by group and gender')
     ax.set_xticks(index + 2 * bar_width)
     ax.set_xticklabels(('Happy Imitate', 'Sad Imitate', 'Angry Imitate', 'Fear Imitate'))
@@ -152,3 +152,56 @@ def sigle_emotion_probability(emotions_result, label):
             emotion_p.append(None)
     # print emotion_p
     return emotion_p
+
+
+
+
+    # for i in range(0, len(emotions_result.id)):
+    #     row = emotions_result.iloc[i]['Time']
+    #     # print row
+
+    #     # time_text.append(time_text)
+
+    #     os._exit(0)
+
+    # for i in range(0, len(emotions_result.Time)):
+    #     row = emotions_result.iloc[i]['Time']
+    #     # print row
+    #     a = int(row)
+
+    #     time_text = datetime.utcfromtimestamp(a)
+    #     time_text = time_text.strftime("%H:%M:%S")
+    #     print time_text
+    #     dates = matplotlib.dates.datestr2num(time_text)
+    #     print dates
+    #     # time_text.append(time_text)
+    #     os._exit(0)
+
+
+
+
+    # differents emotion values
+    # label_happy = emotions_result.Happy
+    # proability_happy = emotions_result.Proability_h
+
+    # # print emotions_result.Proability_h
+
+    # label_sad = emotions_result.Sad
+    # proability_sad = emotions_result.Proability_s
+
+    # label_angry = emotions_result.Angry
+    # proability_angry = emotions_result.Proability_a
+
+    # label_fear = emotions_result.Fear
+    # proability_fear = emotions_result.Proability_f
+
+    # sigle_probability()
+    # data = []
+    # # print emotions_result.Time
+    # time = emotions_result.Time
+    # for i in range(len(time)):
+    #     data[i] = datetime.strptime(time[i], '%Y-%m-%d')
+    # print data['time']
+    # data.set_index('time')
+
+    # data['Proability'].plot()

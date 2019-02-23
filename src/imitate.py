@@ -38,26 +38,27 @@ def plot_emotion_probability(emotions_result):
     angry_p = sigle_emotion_probability(emotions_result, 'angry')
     fear_p = sigle_emotion_probability(emotions_result, 'fear')
     neutral_p = sigle_emotion_probability(emotions_result, 'neutral')
-    print happy_p
 
-    plt.title('Result Analysis')
-
-    plt.scatter(emotions_result.id, happy_p, color='#FFFF00', label='happy accuracy')
-    plt.scatter(emotions_result.id, sad_p, color='blue', label='sad accuracy')
-    plt.scatter(emotions_result.id, angry_p,  color='red', label='angry accuracy')
-    plt.scatter(emotions_result.id, fear_p, color='green', label='fear accuracy')
-    plt.scatter(emotions_result.id, neutral_p, color='#999999', label='neutral accuracy')
+    plt.scatter(emotions_result.id, neutral_p, s=9, color='#999999', label='neutral')
+    plt.scatter(emotions_result.id, happy_p, s=9, color='#FFFF00', label='happy')
+    plt.scatter(emotions_result.id, sad_p, s=9, color='blue', label='sad')
+    plt.scatter(emotions_result.id, angry_p, s=9, color='red', label='angry')
+    plt.scatter(emotions_result.id, fear_p, s=9, color='green', label='fear')
+   
 
     # plt.plot(sad_p, color='blue', label='sad accuracy')
     # plt.plot(angry_p,  color='red', label='angry accuracy')
     # plt.plot(fear_p, color='green', label='fear accuracy')
     # plt.plot(neutral_p, color='#999999', label='neutral accuracy')
 
-    plt.legend() 
+    plt.legend(('Neutral','Happy', 'Sad', 'Angry', 'Fear'), loc='upper right', fontsize=9) 
+    # plt.legend(loc='best') 
      
-    plt.xlabel('time')
-    plt.ylabel('each emotion probability')
+    plt.xlabel('The Process of Imitating (Facial Recognition)', fontsize=11)
+    plt.ylabel('The Result of FER (Probability)', fontsize=12)
 
+
+    # plt.title('Result Analysis')
     # ax.set_title("each emotion probability values")
     plt.show()
 
@@ -71,8 +72,6 @@ if __name__ == '__main__':
 
     (happy,sad,angry,fear,neutral) = get_single_emotion(emotions_result)
     (happy_p,sad_p,angry_p,fear_p,neutral_p) = get_single_probability(emotions_result)
-    # print happy[0],happy_p[0]
-    # print len(happy_p), len(sad_p), len(angry_p), len(fear_p), len(neutral_p)
 
     # sigle_proability(emotions_result)
 
@@ -81,7 +80,6 @@ if __name__ == '__main__':
     angry_label = sigle_emotion_label(emotions_result, 'angry')
     fear_label = sigle_emotion_label(emotions_result, 'fear')
     neutral_label = sigle_emotion_label(emotions_result, 'neutral')
-
     # print len(happy_label), len(sad_label), len(angry_label), len(fear_label), len(neutral_label)
 
     happy_p = sigle_emotion_probability(emotions_result, 'happy')
@@ -91,57 +89,10 @@ if __name__ == '__main__':
     neutral_p = sigle_emotion_probability(emotions_result, 'neutral')
     # print len(happy_p), len(sad_p), len(angry_p), len(fear_p), len(neutral_p)
 
-    plot_emotion_probability(emotions_result)
+    # plot_emotion_probability(emotions_result)
+
+    single_people_number(user=hudi, n_groups=4)
 
     os._exit(0)
 
-    for i in range(0, len(emotions_result.id)):
-        row = emotions_result.iloc[i]['Time']
-        # print row
-
-        # time_text.append(time_text)
-
-        os._exit(0)
-
-    # for i in range(0, len(emotions_result.Time)):
-    #     row = emotions_result.iloc[i]['Time']
-    #     # print row
-    #     a = int(row)
-
-    #     time_text = datetime.utcfromtimestamp(a)
-    #     time_text = time_text.strftime("%H:%M:%S")
-    #     print time_text
-    #     dates = matplotlib.dates.datestr2num(time_text)
-    #     print dates
-    #     # time_text.append(time_text)
-    #     os._exit(0)
-
-
-
-
-    # differents emotion values
-    # label_happy = emotions_result.Happy
-    # proability_happy = emotions_result.Proability_h
-
-    # # print emotions_result.Proability_h
-
-    # label_sad = emotions_result.Sad
-    # proability_sad = emotions_result.Proability_s
-
-    # label_angry = emotions_result.Angry
-    # proability_angry = emotions_result.Proability_a
-
-    # label_fear = emotions_result.Fear
-    # proability_fear = emotions_result.Proability_f
-
-    # sigle_probability()
-    # data = []
-    # # print emotions_result.Time
-    # time = emotions_result.Time
-    # for i in range(len(time)):
-    #     data[i] = datetime.strptime(time[i], '%Y-%m-%d')
-    # print data['time']
-    # data.set_index('time')
-
-    # data['Proability'].plot()
-
+    
