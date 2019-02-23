@@ -66,3 +66,89 @@ def single_people_number(user, n_groups):
     # plt.savefig('E:\\cloud\\cuhksz\\mini_Xception\\level5\\tfApp\image\\test.png')
     plt.show()
     return 0
+
+
+def get_single_emotion(Emotion_file):
+
+    happy = []
+    sad = []
+    angry = []
+    fear = []
+    neutral = []
+    emotions_result = Emotion_file
+
+    for i in range(len(emotions_result.Emotion)):
+        if emotions_result.Emotion[i] == 'happy':
+            # print emotions_result.Emotion[i]
+            happy.append(emotions_result.Emotion[i])
+        elif emotions_result.Emotion[i] == 'sad':
+            # print emotions_result.Emotion[i]
+            sad.append(emotions_result.Emotion[i])
+        elif emotions_result.Emotion[i] == 'angry':
+            # print emotions_result.Emotion[i]
+            angry.append(emotions_result.Emotion[i])
+        elif emotions_result.Emotion[i] == 'fear':
+            # print emotions_result.Emotion[i]
+            fear.append(emotions_result.Emotion[i])
+        else:
+            # print emotions_result.Emotion[i]
+            neutral.append(emotions_result.Emotion[i])
+
+    return happy,sad,angry,fear,neutral
+
+
+def get_single_probability(Emotion_file):
+
+    happy_p = []
+    sad_p = []
+    angry_p = []
+    fear_p = []
+    neutral_p = []
+    emotions_result = Emotion_file
+
+    for i in range(len(emotions_result.Emotion)):
+        if emotions_result.Emotion[i] == 'happy':
+            # print emotions_result.Probability[i]
+            happy_p.append(emotions_result.Probability[i])
+        elif emotions_result.Emotion[i] == 'sad':
+            # print emotions_result.Probability[i]
+            sad_p.append(emotions_result.Probability[i])
+        elif emotions_result.Emotion[i] == 'angry':
+            # print emotions_result.Probability[i]
+            angry_p.append(emotions_result.Probability[i])
+        elif emotions_result.Emotion[i] == 'fear':
+            # print emotions_result.Probability[i]
+            fear_p.append(emotions_result.Probability[i])
+        else:
+            # print emotions_result.Probability[i]
+            neutral_p.append(emotions_result.Probability[i])
+
+    return happy_p,sad_p,angry_p,fear_p,neutral_p
+
+
+# getting 4 kind of emotion values
+def sigle_emotion_label(emotions_result, label):
+# emotions_result is file
+# return each emotion label 
+    Emotion = label
+    emotion = []
+    for i in range(len(emotions_result.id)):
+        if emotions_result.Emotion[i] == Emotion:
+            emotion.append(emotions_result.Emotion[i])
+        else:
+            emotion.append(0)
+    # print len(emotion), emotion
+    return emotion
+
+def sigle_emotion_probability(emotions_result, label):
+# emotions_result is file
+# return each emotion label 
+    Emotion = label
+    emotion_p = []
+    for i in range(len(emotions_result.id)):
+        if emotions_result.Emotion[i] == Emotion:
+            emotion_p.append(emotions_result.Probability[i])
+        else:
+            emotion_p.append(0)
+    # print emotion_p
+    return emotion_p
